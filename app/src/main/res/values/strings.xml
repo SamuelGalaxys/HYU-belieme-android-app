@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Belieme</string>
+    <string name="go_to_potal_login">포털 아이디로 로그인</string>
+    <string name="schoolNameHanyang">한양대학교</string>
+    <string name="majorNameHanyangCse">컴퓨터소프트웨어학부</string>
+    <string name="appName">빌리미</string>
+    <string name="appNameWithMajor">컴소 빌리미</string>
+    <string name="rent">대여</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="itemSymbol">물품 심볼</string>
+    <string name="itemName">물품명</string>
+    <string name="itemAmount">전체 갯수</string>
+    <string name="login_id">아이디를 입력하세요</string>
+    <string name="login_password">비밀번호를 입력하세요</string>
+    <string name="set_admin_mode">관리자 모드로</string>
+    <string name="set_user_mode">사용자 모드로</string>
+
+    <!--    <string name="default_num">0</string>-->
+
+</resources>
