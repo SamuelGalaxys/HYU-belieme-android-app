@@ -42,6 +42,7 @@ public class UserSettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), UserInfoActivity.class);
+
             }
         });
 
