@@ -12,7 +12,10 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import hanyang.ac.kr.belieme.DataType.UserInfo;
+import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
+import hanyang.ac.kr.belieme.manager.PreferenceManager;
 
 public class StartActivity extends AppCompatActivity {
 
@@ -20,6 +23,28 @@ public class StartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+
+        if(getIntent().getBooleanExtra("exit", false)) {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        if(!PreferenceManager.getString(getApplicationContext(), "gaeinNo").equals("")) {
+            Globals.userInfo = new UserInfo(
+                    PreferenceManager.getString(this, "gaeinNo"),
+                    PreferenceManager.getString(this, "userNm"),
+                    PreferenceManager.getString(this, "sosokId"),
+                    PreferenceManager.getString(this, "userGb"),
+                    PreferenceManager.getString(this, "daehakNm"),
+                    PreferenceManager.getString(this, "sosokNm"),
+                    PreferenceManager.getString(this, "userGbNm")
+            );
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
 
         ImageView loginButton = findViewById(R.id.login_message_box);
 
@@ -30,5 +55,7 @@ public class StartActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+
     }
 }

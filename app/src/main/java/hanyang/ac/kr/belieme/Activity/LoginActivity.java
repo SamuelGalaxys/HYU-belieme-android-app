@@ -102,7 +102,8 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected UserInfo doInBackground(String... strings) {
             try {
-                return UserInfoRequest.getUserInfo(strings[0]);
+                UserInfoRequest userInfoRequest = new UserInfoRequest(getApplicationContext());
+                return userInfoRequest.getUserInfo(strings[0]);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
@@ -115,8 +116,10 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(UserInfo userInfo) {
             super.onPostExecute(userInfo);
             if(userInfo != null) {
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                Intent intent = new Intent(LoginActivity.this, StartActivity.class);
                 Globals.userInfo = userInfo;
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("exit", true);
                 startActivity(intent);
                 finish();
             }

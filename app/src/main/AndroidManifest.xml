@@ -12,7 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Activity.fragment.UserInfoActivity"></activity>
         <activity android:name=".Activity.UserInfoActivity" />
         <activity android:name=".Activity.LoginActivity" />
         <activity android:name=".Activity.AddItemActivity" />

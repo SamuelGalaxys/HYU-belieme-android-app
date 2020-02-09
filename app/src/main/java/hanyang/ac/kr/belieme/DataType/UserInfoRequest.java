@@ -1,5 +1,6 @@
 package hanyang.ac.kr.belieme.DataType;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -13,9 +14,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import hanyang.ac.kr.belieme.Constants;
+import hanyang.ac.kr.belieme.manager.PreferenceManager;
 
 public class UserInfoRequest {
-    public static UserInfo getUserInfo(String accessToken) throws IOException, JSONException {
+    Context context;
+
+    public UserInfoRequest(Context context) {
+        this.context = context;
+    }
+
+    public UserInfo getUserInfo(String accessToken) throws IOException, JSONException {
         String output = "";
         String line;
 
@@ -38,6 +46,9 @@ public class UserInfoRequest {
             if (line == null) break;
             output += line;
         }
+
+        Log.d("jsonOutput", output);
+
         JSONObject outputJason = new JSONObject(output);
         outputJason = outputJason.getJSONObject("response");
         outputJason = outputJason.getJSONObject("item");
@@ -45,8 +56,20 @@ public class UserInfoRequest {
                 outputJason.getString("gaeinNo"),
                 outputJason.getString("userNm"),
                 outputJason.getString("sosokId"),
-                outputJason.getString("userGb")
+                outputJason.getString("userGb"),
+                outputJason.getString("daehakNm"),
+                outputJason.getString("sosokNm"),
+                outputJason.getString("userGbNm")
         );
+
+        PreferenceManager.setString(context, "gaeinNo", outputJason.getString("gaeinNo"));
+        PreferenceManager.setString(context, "userNm", outputJason.getString("userNm"));
+        PreferenceManager.setString(context, "sosokId", outputJason.getString("sosokId"));
+        PreferenceManager.setString(context, "userGb", outputJason.getString("userGb"));
+        PreferenceManager.setString(context, "daehakNm", outputJason.getString("daehakNm"));
+        PreferenceManager.setString(context, "sosokNm", outputJason.getString("sosokNm"));
+        PreferenceManager.setString(context, "userGbNm", outputJason.getString("userGbNm"));
+
 
         Log.d("니 이름", outputJason.getString("userNm"));
 

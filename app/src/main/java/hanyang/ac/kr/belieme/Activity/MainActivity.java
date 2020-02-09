@@ -52,6 +52,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(getIntent().getBooleanExtra("logout", false)) {
+            Intent intent = new Intent(getApplicationContext(), StartActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         changeModeBtn = findViewById(R.id.main_btn_changeMode);
 
         bottomNavigationView = findViewById(R.id.main_bottomNavigationView);
@@ -59,8 +67,7 @@ public class MainActivity extends AppCompatActivity {
         title = findViewById(R.id.main_textView_title);
 
         Globals.isAdminMode = false;
-        Globals.adminIds.add("2018008886");
-        if(Globals.adminIds.indexOf(Globals.userInfo.getStudentId()) != -1) {
+        Globals.adminIds.add("2018008886");if(Globals.adminIds.indexOf(Globals.userInfo.getStudentId()) != -1) {
             changeModeBtn.setVisibility(View.VISIBLE);
         }
 
