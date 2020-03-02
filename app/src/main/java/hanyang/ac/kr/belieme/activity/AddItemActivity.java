@@ -18,7 +18,7 @@ import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 
-public class AddItemActivity extends AppCompatActivity {
+public class AddItemActivity extends AppCompatActivity { //TODO 버그 있는 듯
 
     private TextView nameView;
     private TextView amountView;

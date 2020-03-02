@@ -19,7 +19,7 @@ import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.adapter.SettingAdapter;
 import hanyang.ac.kr.belieme.dataType.Setting;
 
-public class SettingFragment extends Fragment {
+public class SettingFragment extends Fragment { // TODO 추가해야지 ㅎㅎ
     View layoutView;
     Context context;
 

@@ -22,7 +22,7 @@ import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
 import hanyang.ac.kr.belieme.R;
 
-public class AdminHistoryFragment extends Fragment { //TODO 바꾸기
+public class AdminHistoryFragment extends Fragment {
     private Context context;
     private View layoutView;
 

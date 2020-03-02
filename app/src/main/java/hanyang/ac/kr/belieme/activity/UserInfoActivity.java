@@ -17,7 +17,7 @@ import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.manager.PreferenceManager;
 
-public class UserInfoActivity extends AppCompatActivity {
+public class UserInfoActivity extends AppCompatActivity { // TODO 필요한 정보 더 있지 않을까? ㅎㅎ
     LinearLayout linearLayout;
     Button logoutBtn;
 

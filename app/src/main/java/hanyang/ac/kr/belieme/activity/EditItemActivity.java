@@ -27,7 +27,7 @@ import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 
-public class EditItemActivity extends AppCompatActivity {
+public class EditItemActivity extends AppCompatActivity { // TODO 걍 다시 만들자 ㅎㅎ
     ArrayList<Itemholder> itemholders = new ArrayList<>();
     ArrayList<Item> items = new ArrayList<Item>();
 
