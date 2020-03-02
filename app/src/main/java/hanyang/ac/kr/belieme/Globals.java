@@ -2,7 +2,7 @@ package hanyang.ac.kr.belieme;
 
 import java.util.ArrayList;
 
-import hanyang.ac.kr.belieme.DataType.UserInfo;
+import hanyang.ac.kr.belieme.dataType.UserInfo;
 
 public class Globals {
     public static ArrayList<String> adminIds = new ArrayList<>();

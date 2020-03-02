@@ -12,21 +12,20 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Activity.UserInfoActivity" />
-        <activity android:name=".Activity.LoginActivity" />
-        <activity android:name=".Activity.AddItemActivity" />
+        <activity android:name=".activity.UserInfoActivity" />
+        <activity android:name=".activity.LoginActivity" />
+        <activity android:name=".activity.AddItemActivity" />
         <activity
-            android:name=".Activity.EditItemActivity"
+            android:name=".activity.EditItemActivity"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name=".Activity.StartActivity">
+        <activity android:name=".activity.StartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.MainActivity" />
-        <activity android:name=".Activity.AdminMainActivity" />
+        <activity android:name=".activity.MainActivity" />
     </application>
 
 </manifest>
