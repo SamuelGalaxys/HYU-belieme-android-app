@@ -11,11 +11,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 
 import hanyang.ac.kr.belieme.Constants;
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 
 public class ItemRequest {
-    public static ArrayList<Item> getList() throws JSONException, IOException {
+    public static ArrayList<Item> getList() throws JSONException, IOException, InternalServerException {
         String output = "";
         URL url = new URL(Constants.serverURL + "item/");
 
@@ -40,23 +42,55 @@ public class ItemRequest {
             connection.disconnect();
         }
 
-        JSONArray jsonArray = new JSONArray(output);
 
-        ArrayList<Item> items = new ArrayList<>();
 
-        for (int i = 0; i < jsonArray.length(); i++) {
-            items.add(new Item(
-                    jsonArray.getJSONObject(i).getInt("id"),
-                    jsonArray.getJSONObject(i).getInt("typeId"),
-                    jsonArray.getJSONObject(i).getInt("num"),
-                    ItemStatus.stringToItemStatus(jsonArray.getJSONObject(i).getString("status")),
-                    jsonArray.getJSONObject(i).getInt("lastHistoryId")
-            ));
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
+
+        if(header.getInt("code") == InternalServerException.OK) {
+            ArrayList<Item> items = new ArrayList<>();
+            JSONArray body = jsonObject.getJSONArray("body");
+
+            History lastHistory;
+
+            for(int i = 0; i < body.length(); i++) {
+                if (body.getJSONObject(i).getInt("lastHistoryId") == -1) {
+                    lastHistory = null;
+                } else {
+                    lastHistory = new History(body.getJSONObject(i).getInt("id"),
+                            body.getJSONObject(i).getInt("typeId"),
+                            body.getJSONObject(i).getInt("num"),
+                            body.getJSONObject(i).getString("requesterName"),
+                            body.getJSONObject(i).getInt("requesterId"),
+                            body.getJSONObject(i).getString("responseManagerName"),
+                            body.getJSONObject(i).getInt("responseManagerId"),
+                            body.getJSONObject(i).getString("returnManagerName"),
+                            body.getJSONObject(i).getInt("returnManagerId"),
+                            new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000),
+                            new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000),
+                            new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000),
+                            new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000),
+                            HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("lastHistoryStatus"))
+                    );
+                }
+                items.add(new Item(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("num"),
+                        ItemStatus.stringToItemStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getInt("lastHistoryId"),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji"),
+                        lastHistory
+                ));
+            }
+            return items;
+        } else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
-        return items;
     }
 
-    public static ArrayList<Item> getListByTypeId(int typeId) throws JSONException, IOException {
+    public static ArrayList<Item> getListByTypeId(int typeId) throws JSONException, IOException, InternalServerException {
         String output = "";
         URL url = new URL(Constants.serverURL + "item/byTypeId/" + typeId);
 
@@ -81,29 +115,126 @@ public class ItemRequest {
             connection.disconnect();
         }
 
-        JSONArray jsonArray = new JSONArray(output);
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
 
-        ArrayList<Item> items = new ArrayList<>();
+        if(header.getInt("code") == InternalServerException.OK) {
+            ArrayList<Item> items = new ArrayList<>();
+            JSONArray body = jsonObject.getJSONArray("body");
 
-        for (int i = 0; i < jsonArray.length(); i++) {
-            items.add(new Item(
-                    jsonArray.getJSONObject(i).getInt("id"),
-                    jsonArray.getJSONObject(i).getInt("typeId"),
-                    jsonArray.getJSONObject(i).getInt("num"),
-                    ItemStatus.stringToItemStatus(jsonArray.getJSONObject(i).getString("status")),
-                    jsonArray.getJSONObject(i).getInt("lastHistoryId")
-            ));
+            History lastHistory;
+
+            for (int i = 0; i < body.length(); i++) {
+                if (body.getJSONObject(i).getInt("lastHistoryId") == -1) {
+                    lastHistory = null;
+                } else {
+                    lastHistory = new History(body.getJSONObject(i).getInt("id"),
+                            body.getJSONObject(i).getInt("typeId"),
+                            body.getJSONObject(i).getInt("num"),
+                            body.getJSONObject(i).getString("requesterName"),
+                            body.getJSONObject(i).getInt("requesterId"),
+                            body.getJSONObject(i).getString("responseManagerName"),
+                            body.getJSONObject(i).getInt("responseManagerId"),
+                            body.getJSONObject(i).getString("returnManagerName"),
+                            body.getJSONObject(i).getInt("returnManagerId"),
+                            new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000),
+                            new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000),
+                            new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000),
+                            new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000),
+                            HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("lastHistoryStatus"))
+                    );
+                }
+                items.add(new Item(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("num"),
+                        ItemStatus.stringToItemStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getInt("lastHistoryId"),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji"),
+                        lastHistory
+                ));
+            }
+            return items;
+        }else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
-        return items;
     }
 
-    public static Item addItem(Item item) throws IOException, JSONException {
+    public static Item getItem(int id) throws IOException, JSONException, InternalServerException {
+        String output = "";
+        URL url = new URL(Constants.serverURL + "item/" + id);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        if (connection != null) {
+            connection.setConnectTimeout(10000);
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept-Charset", "UTF-8");
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+            String line = null;
+
+            while (true) {
+                line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                output += (line + "\n");
+            }
+            reader.close();
+            connection.disconnect();
+        }
+
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
+
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONObject body = jsonObject.getJSONObject("body");
+
+            History lastHistory;
+
+            if (body.getInt("lastHistoryId") == -1) {
+                lastHistory = null;
+            } else {
+                lastHistory = new History(body.getInt("id"),
+                        body.getInt("typeId"),
+                        body.getInt("num"),
+                        body.getString("requesterName"),
+                        body.getInt("requesterId"),
+                        body.getString("responseManagerName"),
+                        body.getInt("responseManagerId"),
+                        body.getString("returnManagerName"),
+                        body.getInt("returnManagerId"),
+                        new Date(body.getLong("requestTimeStamp") * 1000),
+                        new Date(body.getLong("responseTimeStamp") * 1000),
+                        new Date(body.getLong("returnTimeStamp") * 1000),
+                        new Date(body.getLong("cancelTimeStamp") * 1000),
+                        HistoryStatus.stringToHistoryStatus(body.getString("lastHistoryStatus"))
+                );
+            }
+            return new Item(
+                    body.getInt("id"),
+                    body.getInt("typeId"),
+                    body.getInt("num"),
+                    ItemStatus.stringToItemStatus(body.getString("status")),
+                    body.getInt("lastHistoryId"),
+                    body.getString("typeName"),
+                    body.getString("typeEmoji"),
+                    lastHistory
+            );
+        } else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
+    }
+
+    public static Item addItem(Item item) throws IOException, JSONException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("typeId", item.getTypeId());
 
-        java.net.URL url = new URL(Constants.serverURL + "item/");
+        URL url = new URL(Constants.serverURL + "item/");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         if (connection != null) {
@@ -137,89 +268,109 @@ public class ItemRequest {
             }
             connection.disconnect();
         }
-        JSONObject newJsonObject = new JSONObject(output);
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
 
-        Item newItem = new Item(
-                newJsonObject.getInt("id"),
-                newJsonObject.getInt("typeId"),
-                newJsonObject.getInt("num"),
-                ItemStatus.stringToItemStatus(newJsonObject.getString("status")),
-                newJsonObject.getInt("lastHistoryId")
-        );
-        return newItem;
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONObject body = outputJsonObject.getJSONObject("body");
+
+            History lastHistory;
+
+            if (body.getInt("lastHistoryId") == -1) {
+                lastHistory = null;
+            } else {
+                lastHistory = new History(body.getInt("id"),
+                        body.getInt("typeId"),
+                        body.getInt("num"),
+                        body.getString("requesterName"),
+                        body.getInt("requesterId"),
+                        body.getString("responseManagerName"),
+                        body.getInt("responseManagerId"),
+                        body.getString("returnManagerName"),
+                        body.getInt("returnManagerId"),
+                        new Date(body.getLong("requestTimeStamp") * 1000),
+                        new Date(body.getLong("responseTimeStamp") * 1000),
+                        new Date(body.getLong("returnTimeStamp") * 1000),
+                        new Date(body.getLong("cancelTimeStamp") * 1000),
+                        HistoryStatus.stringToHistoryStatus(body.getString("lastHistoryStatus"))
+                );
+            }
+
+            Item newItem = new Item(
+                    body.getInt("id"),
+                    body.getInt("typeId"),
+                    body.getInt("num"),
+                    ItemStatus.stringToItemStatus(body.getString("status")),
+                    body.getInt("lastHistoryId"),
+                    body.getString("typeName"),
+                    body.getString("typeEmoji"),
+                    lastHistory
+            );
+            return newItem;
+        } else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static boolean editItem(Item item) throws IOException, JSONException {
+    public static void activateItem(int id) throws IOException, JSONException, InternalServerException {
         String output = "";
-        JSONObject jsonObject = new JSONObject();
 
-        jsonObject.put("id", item.getId());
-        jsonObject.put("typeId", item.getTypeId());
-        jsonObject.put("num", item.getNum());
-        jsonObject.put("status", item.getStatus());
-        jsonObject.put("lastHistoryId", item.getLastHistoryId());
-
-        java.net.URL url = new URL(Constants.serverURL + "item/");
+        java.net.URL url = new URL(Constants.serverURL + "item/activate/"+id);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
+
         if (connection != null) {
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setInstanceFollowRedirects(false);
-            connection.setChunkedStreamingMode(0);
-            connection.setRequestMethod("PUT");
-            connection.setRequestProperty("Content-type", "application/json");
-            connection.setRequestProperty("Accept-Charset", "UTF-8");
             connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
+            connection.setRequestMethod("PUT");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+            String line = null;
 
-            OutputStream os = connection.getOutputStream();
-            os.write(jsonObject.toString().getBytes());
-            os.flush();
-
-            int HttpResult = connection.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                String line = null;
-
-                while (true) {
-                    line = reader.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    output += (line + "\n");
+            while (true) {
+                line = reader.readLine();
+                if (line == null) {
+                    break;
                 }
-                reader.close();
+                output += (line + "\n");
             }
+            reader.close();
             connection.disconnect();
         }
-        if(output.equals("true")) {
-            return true;
-        }
-        else {
-            return false;
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
+
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 
-//    public static void deleteItem(String name) throws JSONException, IOException {
-//        String output = "";
-//        JSONObject jsonObject = new JSONObject();
-//
-//        jsonObject.put("name", name);
-//
-//        java.net.URL url = new URL(ServerUrl.URL + "item/");
-//        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//
-//
-//        if (connection != null) {
-//            connection.setConnectTimeout(10000);
-//            connection.setRequestMethod("DELETE");
-//
-//            OutputStream os = connection.getOutputStream();
-//            os.write(jsonObject.toString().getBytes());
-//            os.flush();
-//
-//            connection.disconnect();
-//        }
-//    }
+    public static void deactivateItem(int id) throws IOException, JSONException, InternalServerException {
+        String output = "";
+
+        java.net.URL url = new URL(Constants.serverURL + "item/deactivate/"+id);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+
+        if (connection != null) {
+            connection.setConnectTimeout(10000);
+            connection.setRequestMethod("PUT");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+            String line = null;
+
+            while (true) {
+                line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                output += (line + "\n");
+            }
+            reader.close();
+            connection.disconnect();
+        }
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
+
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
+    }
 }

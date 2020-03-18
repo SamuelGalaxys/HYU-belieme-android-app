@@ -17,9 +17,11 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.adapter.UserHistoryAdapter;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
 
@@ -48,22 +50,30 @@ public class UserHistoryFragment extends Fragment {
         return layoutView;
     }
 
-    private class HistoryReceiveTask extends AsyncTask<Void, Void, ArrayList<History>> {
+    private class HistoryReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<History>>> {
         @Override
-        protected ArrayList<History> doInBackground(Void... voids) {
+        protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
-                return HistoryRequest.getListByRequesterId(Integer.parseInt(Globals.userInfo.getStudentId()));
+                return new ExceptionAdder<>(HistoryRequest.getListByRequesterId(Integer.parseInt(Globals.userInfo.getStudentId())));
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InternalServerException e) {
                 e.printStackTrace();
             }
             return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<History> result) {
-            adapter.update(result);
+        protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
+            if (result.getBody() != null) {
+                adapter.update(result.getBody());
+            } else {
+                ArrayList<History> error = new ArrayList<>();
+                error.add(new History(result.getException().getMessage()));
+                adapter.update(error);
+            }
         }
     }
 }

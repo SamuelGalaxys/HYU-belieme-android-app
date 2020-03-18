@@ -7,18 +7,19 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
 import java.io.IOException;
 
-import hanyang.ac.kr.belieme.dataType.Item;
-import hanyang.ac.kr.belieme.dataType.ItemRequest;
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 
-public class AddItemActivity extends AppCompatActivity { //TODO 버그 있는 듯
+public class AddItemActivity extends AppCompatActivity {
 
     private TextView nameView;
     private TextView amountView;
@@ -40,6 +41,7 @@ public class AddItemActivity extends AppCompatActivity { //TODO 버그 있는 �
         plusBtn = findViewById(R.id.addItem_imageView_plusBtn);
         minusBtn = findViewById(R.id.addItem_imageView_minusBtn);
 
+        saveBtn.setEnabled(true);
         amountView.setText("0");
 
         amount = 0;
@@ -67,60 +69,46 @@ public class AddItemActivity extends AppCompatActivity { //TODO 버그 있는 �
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                saveBtn.setEnabled(false);
                 amount = Integer.parseInt(amountView.getText().toString());
-                ItemType itemType = new ItemType(0,
-                        nameView.getText().toString(),
-                        emojiView.getText().toString(),
-                        amount,
-                        amount);
-                ItemTypePostTask postTask = new ItemTypePostTask();
-                postTask.execute(itemType);
+                if (amount <= 0) {
+                    Toast.makeText(getApplicationContext(), "수량이 0인 물품은 등록할 수 없습니다.", Toast.LENGTH_LONG).show();
+                    saveBtn.setEnabled(true);
+                } else {
+                    ItemType itemType = new ItemType(0,
+                            nameView.getText().toString(),
+                            emojiView.getText().toString(),
+                            amount,
+                            amount);
+                    ItemTypePostTask postTask = new ItemTypePostTask();
+                    postTask.execute(itemType);
+                }
             }
         });
     }
 
-    private class ItemTypePostTask extends AsyncTask<ItemType, Void, Integer> {
+    private class ItemTypePostTask extends AsyncTask<ItemType, Void, ExceptionAdder<ItemType>> {
 
         @Override
-        protected Integer doInBackground(ItemType... itemTypes) {
+        protected ExceptionAdder<ItemType> doInBackground(ItemType... itemTypes) {
             try {
-                return ItemTypeRequest.addItem(itemTypes[0]).getId();
-            } catch (IOException e) {
+                return new ExceptionAdder<>(ItemTypeRequest.addItem(itemTypes[0]));
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(Integer result) {
+        protected void onPostExecute(ExceptionAdder<ItemType> result) {
             super.onPostExecute(result);
-            ItemPostTask itemPostTask = new ItemPostTask();
-            itemPostTask.execute(new Item(result));
-        }
-    }
-
-    private class ItemPostTask extends AsyncTask<Item, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Item... items) {
-            try {
-                for(int i = 0; i < amount; i++) {
-                    ItemRequest.addItem(items[0]);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if(result.getException() == null) {
+                finish();
             }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            finish();
+            else {
+                saveBtn.setEnabled(true);
+                Toast.makeText(getApplicationContext(), result.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

@@ -1,16 +1,14 @@
 package hanyang.ac.kr.belieme.dataType;
 
-import com.saber.stickyheader.stickyData.StickyMainData;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import hanyang.ac.kr.belieme.Globals;
-
 public class History {
     public static final int VIEW_TYPE_HEADER = 0;
     public static final int VIEW_TYPE_ITEM = 1;
+    public static final int VIEW_TYPE_ERROR = 2;
+
     private int viewType;
 
     private int id;
@@ -21,50 +19,67 @@ public class History {
     private String requesterName;
     private int requesterId;
 
-    private String managerName;
-    private int managerId;
+    private String responseManagerName;
+    private int responseManagerId;
+
+    private String returnManagerName;
+    private int returnManagerId;
 
     private Date requestTimeStamp;
     private Date responseTimeStamp;
-    private Date returnedTimeStamp;
+    private Date returnTimeStamp;
+    private Date cancelTimeStamp;
 
     private HistoryStatus status;
 
-    private String tmpTypeName;
+    private String typeName;
+    private String typeEmoji;
+
+    private String errorMessage;
 
     public History() {
     }
 
-    public History(int id, int typeId, int itemNum, String requesterName, int requesterId, String managerName, int managerId, Date requestTimeStamp, Date responseTimeStamp, Date returnedTimeStamp, HistoryStatus status, String tmpTypeName) {
-        this.id = id;
-        this.typeId = typeId;
-        this.itemNum = itemNum;
-        this.requesterName = requesterName;
-        this.requesterId = requesterId;
-        this.managerName = managerName;
-        this.managerId = managerId;
-        this.requestTimeStamp = requestTimeStamp;
-        this.responseTimeStamp = responseTimeStamp;
-        this.returnedTimeStamp = returnedTimeStamp;
-        this.status = status;
-        this.viewType = VIEW_TYPE_ITEM;
-        this.tmpTypeName = tmpTypeName;
+    public History(String errorMessage) {
+        this.viewType = VIEW_TYPE_ERROR;
+        this.errorMessage = errorMessage;
     }
 
-    public History(int id, int typeId, int itemNum, String requesterName, int requesterId, String managerName, int managerId, Date requestTimeStamp, Date responseTimeStamp, Date returnedTimeStamp, HistoryStatus status, int viewType, String tmpTypeName) {
+    public History(int id, int typeId, int itemNum, String requesterName, int requesterId, String responseManagerName, int responseManagerId, String returnManagerName, int returnManagerId, Date requestTimeStamp, Date responseTimeStamp, Date returnTimeStamp, Date cancelTimeStamp, HistoryStatus status, String typeName, String typeEmoji) {
         this.id = id;
         this.typeId = typeId;
         this.itemNum = itemNum;
         this.requesterName = requesterName;
         this.requesterId = requesterId;
-        this.managerName = managerName;
-        this.managerId = managerId;
+        this.responseManagerName = responseManagerName;
+        this.responseManagerId = responseManagerId;
+        this.returnManagerName = returnManagerName;
+        this.returnManagerId = returnManagerId;
         this.requestTimeStamp = requestTimeStamp;
         this.responseTimeStamp = responseTimeStamp;
-        this.returnedTimeStamp = returnedTimeStamp;
+        this.returnTimeStamp = returnTimeStamp;
+        this.cancelTimeStamp = cancelTimeStamp;
         this.status = status;
-        this.viewType = viewType;
-        this.tmpTypeName = tmpTypeName;
+        this.typeName = typeName;
+        this.typeEmoji = typeEmoji;
+
+    }
+
+    public History(int id, int typeId, int itemNum, String requesterName, int requesterId, String responseManagerName, int responseManagerId, String returnManagerName, int returnManagerId, Date requestTimeStamp, Date responseTimeStamp, Date returnTimeStamp, Date cancelTimeStamp, HistoryStatus status) {
+        this.id = id;
+        this.typeId = typeId;
+        this.itemNum = itemNum;
+        this.requesterName = requesterName;
+        this.requesterId = requesterId;
+        this.responseManagerName = responseManagerName;
+        this.responseManagerId = responseManagerId;
+        this.returnManagerName = returnManagerName;
+        this.returnManagerId = returnManagerId;
+        this.requestTimeStamp = requestTimeStamp;
+        this.responseTimeStamp = responseTimeStamp;
+        this.returnTimeStamp = returnTimeStamp;
+        this.cancelTimeStamp = cancelTimeStamp;
+        this.status = status;
     }
 
     public History(int typeId, int itemNum, String requesterName, int requesterId) {
@@ -73,13 +88,15 @@ public class History {
         this.itemNum = itemNum;
         this.requesterName = requesterName;
         this.requesterId = requesterId;
-        this.managerName = "";
-        this.managerId = 0;
+        this.responseManagerName = "";
+        this.responseManagerId = 0;
         this.requestTimeStamp = new Date(0);
         this.responseTimeStamp = new Date(0);
-        this.returnedTimeStamp = new Date(0);
+        this.returnTimeStamp = new Date(0);
+        this.cancelTimeStamp = new Date(0);
         this.status = HistoryStatus.REQUESTED;
-        this.tmpTypeName = null;
+        this.typeName = "";
+        this.typeEmoji = "";
     }
 
     public int getId() {
@@ -102,12 +119,20 @@ public class History {
         return requesterId;
     }
 
-    public String getManagerName() {
-        return managerName;
+    public String getResponseManagerName() {
+        return responseManagerName;
     }
 
-    public int getManagerId() {
-        return managerId;
+    public int getResponseManagerId() {
+        return responseManagerId;
+    }
+
+    public String getReturnManagerName() {
+        return returnManagerName;
+    }
+
+    public int getReturnManagerId() {
+        return returnManagerId;
     }
 
     public Date getRequestTimeStamp() {
@@ -118,8 +143,12 @@ public class History {
         return responseTimeStamp;
     }
 
-    public Date getReturnedTimeStamp() {
-        return returnedTimeStamp;
+    public Date getReturnTimeStamp() {
+        return returnTimeStamp;
+    }
+
+    public Date getCancelTimeStamp() {
+        return cancelTimeStamp;
     }
 
     public HistoryStatus getStatus() {
@@ -130,28 +159,32 @@ public class History {
         return viewType;
     }
 
-    public String getTmpTypeName() {
-        return tmpTypeName;
+    public String getTypeName() {
+        return typeName;
     }
 
-    public void setItemNum(int itemNum) {
-        this.itemNum = itemNum;
+    public String getTypeEmoji() {
+        return typeEmoji;
     }
 
-    public void setManagerName(String managerName) {
-        this.managerName = managerName;
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    public void setManagerId(int managerId) {
-        this.managerId = managerId;
+    public void setResponseManagerName(String responseManagerName) {
+        this.responseManagerName = responseManagerName;
     }
 
-    public void setResponseTimeStamp(Date responseTimeStamp) {
-        this.responseTimeStamp = responseTimeStamp;
+    public void setResponseManagerId(int responseManagerId) {
+        this.responseManagerId = responseManagerId;
     }
 
-    public void setReturnedTimeStamp(Date resultTimeStamp) {
-        this.returnedTimeStamp = resultTimeStamp;
+    public void setReturnManagerName(String returnManagerName) {
+        this.returnManagerName = returnManagerName;
+    }
+
+    public void setReturnManagerId(int returnManagerId) {
+        this.returnManagerId = returnManagerId;
     }
 
     public void setStatus(HistoryStatus status) {
@@ -162,11 +195,23 @@ public class History {
         this.viewType = viewType;
     }
 
-    public void setTmpTypeName(String tmpTypeName) {
-        this.tmpTypeName = tmpTypeName;
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    //TODO 생각 좀 해보기
+    public Date getExpiredDate() {
+        Calendar tmp = Calendar.getInstance();
+        tmp.setTime(requestTimeStamp);
+        tmp.add(Calendar.MINUTE, 15);
+        return tmp.getTime();
     }
 
     public Date getDueDate() {
+//        Calendar tmp = Calendar.getInstance();
+//        tmp.setTime(responseTimeStamp);
+//        tmp.add(Calendar.SECOND, 30);
+//        return tmp.getTime();
         Calendar tmp = Calendar.getInstance();
         tmp.setTime(responseTimeStamp);
         tmp.add(Calendar.DATE, 7);
@@ -185,6 +230,40 @@ public class History {
         return tmp.getTime();
     }
 
+    public String getNotificationTitle() {
+        String result = "";
+        if(status == HistoryStatus.USING) {
+            result = "빌려가신 " + getTypeName() + "의 반납 기한이 다가왔습니다. ";
+
+        }
+        else if(status == HistoryStatus.DELAYED) {
+            long time = System.currentTimeMillis() - getDueDate().getTime();
+            long days = time/(24*60*60*1000);
+            result =  "빌려가신 " + getTypeName() + "이(가) " + days + "일 연체 되었습니다.";
+        }
+        else if(status == HistoryStatus.EXPIRED) {
+            result = "대여 요청 하신 " + getTypeName() + "이(가) 15분이 지나 요청이 자동으로 취소 되었습니다.";
+        }
+        return result;
+    }
+
+    public String getNotificationMessage() {
+        String result = "";
+        if(status == HistoryStatus.USING) {
+            SimpleDateFormat formatter = new SimpleDateFormat("MM월 DD일");
+            result = formatter.format(getDueDate()) + " 오후 6시까지 반납해주세요.";
+            result = "내일 오후 6시까지 반납해주세요.";
+
+        }
+        else if(status == HistoryStatus.DELAYED) {
+            result =  "빠른 시일 내에 반납해주세요.";
+        }
+        else if(status == HistoryStatus.EXPIRED) {
+            result = "뭘 써야 한담";
+        }
+        return result;
+    }
+
     public String dateToString() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
         switch (status) {
@@ -192,7 +271,7 @@ public class History {
             case USING :
                 return formatter.format(responseTimeStamp) + " ~ " + formatter.format(getDueDate());
             case RETURNED :
-                return formatter.format(responseTimeStamp) + " ~ " + formatter.format(returnedTimeStamp);
+                return formatter.format(responseTimeStamp) + " ~ " + formatter.format(returnTimeStamp);
             case REQUESTED :
             case EXPIRED :
                 return formatter.format(requestTimeStamp);

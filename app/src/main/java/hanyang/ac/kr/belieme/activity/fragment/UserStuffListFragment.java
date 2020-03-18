@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import hanyang.ac.kr.belieme.adapter.UserStuffAdapter;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 import hanyang.ac.kr.belieme.Globals;
@@ -59,27 +60,27 @@ public class UserStuffListFragment extends Fragment {
         itemTypeReceiveTask.execute();
     }
 
-    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ArrayList<ItemType>> {
+    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<ItemType>>> {
 
         @Override
-        protected ArrayList<ItemType> doInBackground(Void... voids) {
+        protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
             try {
-                ArrayList<ItemType> result = ItemTypeRequest.getList();
-                if(result == null) {
-                    result = new ArrayList<>();
-                }
-                return result;
-            } catch (JSONException e) {
+                return new ExceptionAdder<>(ItemTypeRequest.getList());
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<ItemType> result) {
-            adapter.update(result);
+        protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
+            if (result.getBody() != null) {
+                adapter.update(result.getBody());
+            } else {
+                ArrayList<ItemType> error = new ArrayList<>();
+                error.add(new ItemType(result.getException().getMessage()));
+                adapter.update(error);
+            }
         }
     }
 }

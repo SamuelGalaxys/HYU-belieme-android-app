@@ -1,12 +1,16 @@
 package hanyang.ac.kr.belieme.adapter;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,8 +21,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
+import hanyang.ac.kr.belieme.activity.DetailHistoryActivity;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
 import hanyang.ac.kr.belieme.dataType.HistoryStatus;
@@ -53,6 +60,10 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
             ViewGroup group = (ViewGroup)inflater.inflate(R.layout.history_cell, parent, false);
             ItemViewHolder itemViewHolder = new ItemViewHolder(group);
             return itemViewHolder;
+        } else if(viewType == History.VIEW_TYPE_ERROR) {
+            ViewGroup group = (ViewGroup)inflater.inflate(R.layout.error_cell, parent, false);
+            ErrorViewHolder errorViewHolder = new ErrorViewHolder(group);
+            return errorViewHolder;
         }
         else {
             return null;
@@ -65,70 +76,11 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
             HeaderViewHolder headerViewHolder = (HeaderViewHolder)holder;
             headerViewHolder.headerTitle.setText(historyList.get(position).getStatus().toKoreanString());
         } else if(holder instanceof  ItemViewHolder) {
-            final History history = historyList.get(position);
-            final ItemViewHolder itemViewHolder = (ItemViewHolder)holder;
-            itemViewHolder.itemName.setText(history.getTmpTypeName() + " " + history.getItemNum());
-            itemViewHolder.timeStamps.setText(history.dateToString());
-
-            switch (history.getStatus()) {
-                case REQUESTED:
-                    itemViewHolder.itemName.setTextColor(context.getResources().getColor(R.color.colorHanyangBlue));
-                    itemViewHolder.timeStamps.setTextColor(context.getResources().getColor(R.color.colorHanyangBlue));
-                    itemViewHolder.btn.setVisibility(View.VISIBLE);
-                    itemViewHolder.btn.setText("확인");
-                    itemViewHolder.btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            history.setManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
-                            history.setManagerName(Globals.userInfo.getName());
-                            history.setStatus(HistoryStatus.USING);
-                            HistoryEditTask historyEditTask = new HistoryEditTask();
-                            historyEditTask.execute(history);
-                        }
-                    });
-                    break;
-                case USING: {
-                    itemViewHolder.itemName.setTextColor(context.getResources().getColor(R.color.colorUsedGreen));
-                    itemViewHolder.timeStamps.setTextColor(context.getResources().getColor(R.color.colorUsedGreen));
-                    itemViewHolder.btn.setVisibility(View.VISIBLE);
-                    itemViewHolder.btn.setText("반납확인");
-                    itemViewHolder.btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            history.setStatus(HistoryStatus.RETURNED);
-                            HistoryEditTask historyEditTask = new HistoryEditTask();
-                            historyEditTask.execute(history);
-                        }
-                    });
-                    break;
-                }
-                case DELAYED: {
-                    itemViewHolder.itemName.setTextColor(context.getResources().getColor(R.color.colorWarnRed));
-                    itemViewHolder.timeStamps.setTextColor(context.getResources().getColor(R.color.colorWarnRed));
-                    itemViewHolder.btn.setVisibility(View.VISIBLE);
-                    itemViewHolder.btn.setText("반납확인");
-                    itemViewHolder.btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            history.setStatus(HistoryStatus.RETURNED);
-                            HistoryEditTask editTask = new HistoryEditTask();
-                            editTask.execute(history);
-                        }
-                    });
-                    break;
-                }
-                case RETURNED:
-                case EXPIRED: {
-                    itemViewHolder.itemName.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
-                    itemViewHolder.timeStamps.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
-                    itemViewHolder.btn.setVisibility(View.INVISIBLE);
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-
+            ((ItemViewHolder)holder).bind(historyList.get(position));
+        }
+        else if(holder instanceof ErrorViewHolder) {
+            ErrorViewHolder errorViewHolder = (ErrorViewHolder)holder;
+            errorViewHolder.errorMessage.setText(historyList.get(position).getErrorMessage());
         }
     }
 
@@ -234,56 +186,201 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         TextView timeStamps;
         Button btn;
 
+        History history;
+
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
 
             itemName = itemView.findViewById(R.id.historyCell_textView_item);
             timeStamps = itemView.findViewById(R.id.historyCell_textView_date);
             btn = itemView.findViewById(R.id.historyCell_btn_btn);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, DetailHistoryActivity.class);
+                    intent.putExtra("id", history.getId());
+                    context.startActivity(intent);
+                }
+            });
+        }
+
+        public void bind(final History history) {
+            itemName.setText(history.getTypeName() + " " + history.getItemNum());
+            timeStamps.setText(history.dateToString());
+
+            switch (history.getStatus()) {
+                case REQUESTED:
+                    itemName.setTextColor(context.getResources().getColor(R.color.colorHanyangBlue));
+                    timeStamps.setTextColor(context.getResources().getColor(R.color.colorHanyangBlue));
+                    btn.setVisibility(View.VISIBLE);
+                    btn.setText("확인");
+                    btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            history.setResponseManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
+                            history.setResponseManagerName(Globals.userInfo.getName());
+                            history.setStatus(HistoryStatus.USING);
+                            HistoryResponseTask historyResponseTask = new HistoryResponseTask();
+                            historyResponseTask.execute(history);
+                        }
+                    });
+                    break;
+                case USING: {
+                    itemName.setTextColor(context.getResources().getColor(R.color.colorUsedGreen));
+                    timeStamps.setTextColor(context.getResources().getColor(R.color.colorUsedGreen));
+                    btn.setVisibility(View.VISIBLE);
+                    btn.setText("반납확인");
+                    btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            history.setReturnManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
+                            history.setReturnManagerName(Globals.userInfo.getName());
+                            history.setStatus(HistoryStatus.RETURNED);
+                            HistoryReturnTask historyReturnTask = new HistoryReturnTask();
+                            historyReturnTask.execute(history);
+                        }
+                    });
+                    break;
+                }
+                case DELAYED: {
+                    itemName.setTextColor(context.getResources().getColor(R.color.colorWarnRed));
+                    timeStamps.setTextColor(context.getResources().getColor(R.color.colorWarnRed));
+                    btn.setVisibility(View.VISIBLE);
+                    btn.setText("반납확인");
+                    btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            history.setStatus(HistoryStatus.RETURNED);
+                            HistoryReturnTask historyReturnTask = new HistoryReturnTask();
+                            historyReturnTask.execute(history);
+                        }
+                    });
+                    break;
+                }
+                case RETURNED:
+                case EXPIRED: {
+                    itemName.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
+                    timeStamps.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
+                    btn.setVisibility(View.INVISIBLE);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+            this.history = history;
         }
     }
 
-    private class HistoryReceiveTask extends AsyncTask<Void, Void, ArrayList<History>> {
+    private class ErrorViewHolder extends RecyclerView.ViewHolder {
+        TextView errorMessage;
+        public ErrorViewHolder(@NonNull View itemView) {
+            super(itemView);
+            errorMessage = itemView.findViewById(R.id.errorCell_textView_message);
+        }
+    }
+
+    private class HistoryReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<History>>> {
 
         @Override
-        protected ArrayList<History> doInBackground(Void... voids) {
+        protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
-                return HistoryRequest.getList();
+                return new ExceptionAdder<>(HistoryRequest.getList());
             } catch (JSONException e) {
                 e.printStackTrace();
+                return new ExceptionAdder<>(e);
             } catch (IOException e) {
                 e.printStackTrace();
+                return new ExceptionAdder<>(e);
+            } catch (InternalServerException e) {
+                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<History> result) {
-            update(result);
+        protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
+            if(result.getBody() != null) {
+                update(result.getBody());
+            }
+            else {
+                ArrayList<History> error = new ArrayList<>();
+                error.add(new History(result.getException().getMessage()));
+                update(error);
+            }
         }
     }
 
-    private class HistoryEditTask extends AsyncTask<History, Void, Void> {
+    private class HistoryReturnTask extends AsyncTask<History, Void, ExceptionAdder<Void>> {
 
         TextView view;
         int itemNum;
 
         @Override
-        protected Void doInBackground(History... histories) {
+        protected ExceptionAdder<Void> doInBackground(History... histories) {
             try {
-                HistoryRequest.editItem(histories[0]);
-            } catch (JSONException e) {
+                HistoryRequest.returnItem(histories[0]);
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
+            return new ExceptionAdder<>();
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
-            historyReceiveTask.execute();
+        protected void onPostExecute(ExceptionAdder<Void> result) {
+            if(result.getException() != null) {
+                //TODO 알림 상자 이거 맞냐??
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                        historyReceiveTask.execute();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+            }
+            else {
+                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                historyReceiveTask.execute();
+            }
+        }
+    }
+
+    private class HistoryResponseTask extends AsyncTask<History, Void, ExceptionAdder<Void>> {
+
+        TextView view;
+        int itemNum;
+
+        @Override
+        protected ExceptionAdder<Void> doInBackground(History... histories) {
+            try {
+                HistoryRequest.responseItem(histories[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ExceptionAdder<>(e);
+            }
+            return new ExceptionAdder<>();
+        }
+
+        @Override
+        protected void onPostExecute(ExceptionAdder<Void> result) {
+            if(result.getException() != null) {
+                Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                        historyReceiveTask.execute();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+            }
+            else {
+                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                historyReceiveTask.execute();
+            }
         }
     }
 }

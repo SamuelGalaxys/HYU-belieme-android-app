@@ -1,101 +1,69 @@
 package hanyang.ac.kr.belieme.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import hanyang.ac.kr.belieme.dataType.History;
-import hanyang.ac.kr.belieme.dataType.HistoryRequest;
+import hanyang.ac.kr.belieme.adapter.EditItemAdapter;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.Item;
 import hanyang.ac.kr.belieme.dataType.ItemRequest;
-import hanyang.ac.kr.belieme.dataType.ItemStatus;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 
-public class EditItemActivity extends AppCompatActivity { // TODO 걍 다시 만들자 ㅎㅎ
-    ArrayList<Itemholder> itemholders = new ArrayList<>();
-    ArrayList<Item> items = new ArrayList<Item>();
-
-    History tmpHistory;
-
+public class EditItemActivity extends AppCompatActivity {
+    private EditItemAdapter adapter;
     private int typeId;
-
-    private String typeName;
 
     private TextView nameView;
     private TextView emojiView;
     private TextView saveBtn;
     private ImageView addBtn;
 
-    private class Itemholder extends LinearLayout {
-        public Itemholder(Context context) {
-            super(context);
-
-            init(context);
-        }
-
-        private void init(Context context) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            inflater.inflate(R.layout.edit_item_cell, this, true);
-        }
-    }
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
 
-        Intent thisIntent = getIntent();
-
         nameView = findViewById(R.id.editItem_editText_name);
         emojiView = findViewById(R.id.editItem_editText_emoji);
         saveBtn = findViewById(R.id.editItem_textView_save);
         addBtn = findViewById(R.id.editItem_btn_addBtn);
+        recyclerView = findViewById(R.id.editItem_recyclerView);
+
+        Intent thisIntent = getIntent();
 
         typeId = thisIntent.getIntExtra("typeId", -1);
-        typeName = thisIntent.getStringExtra("name");
         nameView.setText(thisIntent.getStringExtra("name"));
-//        if(thisIntent.getStringExtra("emoji").equals("")) {
-//            emojiView.setText("X");
-//        }
-//        else {
-            emojiView.setText(thisIntent.getStringExtra("emoji"));
-//        }
+        emojiView.setText(thisIntent.getStringExtra("emoji"));
 
-        String tmp = thisIntent.getStringExtra("countAndAmount").replace("개 사용 가능", "");
-        tmp = tmp.replace("개 중", "");
-        boolean isAmount = true;
-        String tmpCount = new String("");
-        String tmpAmount = new String("");
-        for(int i = 0; i < tmp.length(); i++) {
-            if (tmp.charAt(i) == ' ') {
-                isAmount = false;
-            } else if (isAmount) {
-                tmpAmount += tmp.charAt(i);
-            } else {
-                tmpCount += tmp.charAt(i);
-            }
-        }
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        adapter = new EditItemAdapter(this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(layoutManager);
 
         ItemGetTask itemGetTask = new ItemGetTask();
         itemGetTask.execute(typeId);
 
-        addBtn.setOnClickListener(new View.OnClickListener() { //좀 더 추가버튼을 신중히 누를 수 있게 바꾸기
+        addBtn.setOnClickListener(new View.OnClickListener() { //TODO 좀 더 추가버튼을 신중히 누를 수 있게 바꾸기
             @Override
             public void onClick(View v) {
                 ItemPostTask itemPostTask = new ItemPostTask();
@@ -118,140 +86,90 @@ public class EditItemActivity extends AppCompatActivity { // TODO 걍 다시 만
         });
     }
 
-    public void addItem(Item item) {
-        final Itemholder itemholder = new Itemholder(getApplicationContext());
-        LinearLayout linearLayout;
-        TextView textView = itemholder.findViewById(R.id.editItemCell_textView_item);
-        linearLayout = (LinearLayout)(findViewById(R.id.editItem_linear_itemList));
-        String output = "";
-        if(item.getLastHistoryId() == -1) {
-            output = item.getNum() + " " + "대여 가능";
-            textView.setText(output);
-        }
-        else if(item.getStatus() == ItemStatus.ERROR) {
-            return;
-        }
-        else {
-            HistoryGetTask historyGetTask = new HistoryGetTask(textView, item);
-            historyGetTask.execute(item.getLastHistoryId());
-        }
-        linearLayout.addView(itemholder);
-        itemholders.add(itemholder);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        ItemGetTask itemGetTask = new ItemGetTask();
+        itemGetTask.execute(typeId);
     }
 
-    public void updateAll(ArrayList<Item> items) {
-        Log.d("update", String.valueOf(items.size()));
-        while(itemholders.size() != 0) {
-            ((LinearLayout)itemholders.get(0).getParent()).removeView(itemholders.get(0));
-            itemholders.remove(0);
-        }
-        for(int i = 0; i < items.size(); i++) {
-            addItem(items.get(i));
-            System.out.println("j : " + i);
-        }
-    }
-
-    public class ItemGetTask extends AsyncTask<Integer, Void, ArrayList<Item>> {
+    public class ItemGetTask extends AsyncTask<Integer, Void, ExceptionAdder<ArrayList<Item>>> {
         @Override
-        protected ArrayList<Item> doInBackground(Integer... integers) {
+        protected ExceptionAdder<ArrayList<Item>> doInBackground(Integer... integers) {
             try {
-                return ItemRequest.getListByTypeId(integers[0]);
-            } catch (JSONException e) {
+                return new ExceptionAdder<>(ItemRequest.getListByTypeId(integers[0]));
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Item> items) {
-            super.onPostExecute(items);
-            for(int i = 0; i < items.size(); i++) {
-                Log.d("lastHistoryId", String.valueOf(items.get(i).getLastHistoryId()));
+        protected void onPostExecute(ExceptionAdder<ArrayList<Item>> result) {
+            if (result.getBody() != null) {
+                adapter.update(result.getBody());
+            } else {
+                ArrayList<Item> error = new ArrayList<>();
+                error.add(new Item(result.getException().getMessage()));
+                adapter.update(error);
             }
-            updateAll(items);
         }
     }
 
-    public class ItemPostTask extends AsyncTask<Void, Void, Void> {
+    public class ItemPostTask extends AsyncTask<Void, Void, ExceptionAdder<Void>> {
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected ExceptionAdder<Void> doInBackground(Void... voids) {
             try {
                 ItemRequest.addItem(new Item(typeId));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
+            return new ExceptionAdder<>();
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            ItemGetTask itemGetTask = new ItemGetTask();
-            itemGetTask.execute(typeId);
+        protected void onPostExecute(ExceptionAdder<Void> result) {
+            if(result.getException() != null) {
+                //TODO 알림 상자 이거 맞냐??
+                AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        ItemGetTask itemGetTask = new ItemGetTask();
+                        itemGetTask.execute(typeId);
+                    }
+                });
+                AlertDialog dialog = builder.create();
+            }
+            else {
+                ItemGetTask itemGetTask = new ItemGetTask();
+                itemGetTask.execute(typeId);
+            }
         }
     }
 
-    public class HistoryGetTask extends AsyncTask<Integer, Void, History> {
-
-        TextView view;
-        Item item;
-
-        public HistoryGetTask(TextView view, Item item) {
-            this.view = view;
-            this.item = item;
-        }
+    public class ItemTypeEditTask extends AsyncTask<ItemType, Void, ExceptionAdder<Void>> {
 
         @Override
-        protected History doInBackground(Integer... integers) {
-            try {
-                return HistoryRequest.getHistoryById(integers[0]);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(History history) {
-            super.onPostExecute(history);
-            String output = "";
-            switch (history.getStatus()) {
-                case USING:
-                case DELAYED:
-                    output = item.getNum() + " " + history.getRequesterName() + "(" + history.getRequesterId() + ") 이(가) 사용 중";
-                    break;
-                case REQUESTED:
-                    output = item.getNum() + " " + history.getRequesterName() + "(" + history.getRequesterId() + ") 이(가) 대여 요청 함";
-                    break;
-                case EXPIRED:
-                case RETURNED:
-                    output = item.getNum() + " " + "대여 가능";
-                    break;
-                case ERROR:
-                    break;
-            }
-            view.setText(output);
-        }
-    }
-
-    public class ItemTypeEditTask extends AsyncTask<ItemType, Void, Void> {
-
-        @Override
-        protected Void doInBackground(ItemType... itemTypes) {
+        protected ExceptionAdder<Void> doInBackground(ItemType... itemTypes) {
             try {
                 ItemTypeRequest.editItem(itemTypes[0]);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
+            return new ExceptionAdder<>();
+        }
+
+        @Override
+        protected void onPostExecute(ExceptionAdder<Void> result) {
+            if(result.getException() == null) {
+                Toast.makeText(getApplicationContext(), "물품의 정보가 변경되었습니다.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), result.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

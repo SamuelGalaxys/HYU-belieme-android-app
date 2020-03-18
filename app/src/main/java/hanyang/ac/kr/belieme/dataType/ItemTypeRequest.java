@@ -15,9 +15,10 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import hanyang.ac.kr.belieme.Constants;
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 
 public class ItemTypeRequest {
-    public static ArrayList<ItemType> getList() throws JSONException, IOException {
+    public static ArrayList<ItemType> getList() throws JSONException, IOException, InternalServerException {
         String output = "";
         URL url = new URL(Constants.serverURL + "itemType/");
 
@@ -28,81 +29,59 @@ public class ItemTypeRequest {
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept-Charset", "UTF-8");
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-            String line = null;
+            int HttpResult = connection.getResponseCode();
+            Log.d("httpResult", String.valueOf(HttpResult));
+            if (HttpResult == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                String line = null;
 
-            while (true) {
-                line = reader.readLine();
-                if (line == null) {
-                    break;
+                while (true) {
+                    line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    output += (line + "\n");
                 }
-                output += (line + "\n");
+                reader.close();
             }
-            reader.close();
             connection.disconnect();
         }
 
-        JSONArray jsonArray = new JSONArray(output);
-
-        ArrayList<ItemType> items = new ArrayList<>();
-
-        for (int i = 0; i < jsonArray.length(); i++) {
-            items.add(new ItemType(
-                    jsonArray.getJSONObject(i).getInt("id"),
-                    jsonArray.getJSONObject(i).getString("name"),
-                    jsonArray.getJSONObject(i).getString("emoji"),
-                    jsonArray.getJSONObject(i).getInt("count"),
-                    jsonArray.getJSONObject(i).getInt("amount"))
-            );
-        }
-        return items;
-    }
-
-    public static ItemType getItem(int id) throws JSONException, IOException {
-        String output = "";
-        URL url = new URL(Constants.serverURL + "itemType/" + id);
-
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        if (connection != null) {
-            connection.setConnectTimeout(10000);
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept-Charset", "UTF-8");
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-            String line = null;
-
-            while (true) {
-                line = reader.readLine();
-                if (line == null) {
-                    break;
-                }
-                output += (line + "\n");
-            }
-            reader.close();
-            connection.disconnect();
-        }
 
         JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
 
-        return new ItemType(jsonObject.getInt("id"),
-                    jsonObject.getString("name"),
-                    jsonObject.getString("emoji"),
-                    jsonObject.getInt("count"),
-                    jsonObject.getInt("amount")
-        );
+        if(header.getInt("code") == InternalServerException.OK) {
+            ArrayList<ItemType> items = new ArrayList<>();
+            JSONArray body = jsonObject.getJSONArray("body");
+
+            for (int i = 0; i < body.length(); i++) {
+                items.add(new ItemType(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getString("name"),
+                        body.getJSONObject(i).getString("emoji"),
+                        body.getJSONObject(i).getInt("amount"),
+                        body.getJSONObject(i).getInt("count"),
+                        ItemStatus.stringToItemStatus(body.getJSONObject(i).getString("status")))
+                );
+            }
+            return items;
+        }
+        else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static ItemType addItem(ItemType itemType) throws IOException, JSONException {
+    public static ItemType addItem(ItemType itemType) throws IOException, JSONException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("name", itemType.getName());
         jsonObject.put("emoji", itemType.getEmoji());
-        jsonObject.put("count", itemType.getCount());
         jsonObject.put("amount", itemType.getAmount());
+        jsonObject.put("count", itemType.getCount());
 
-        java.net.URL url = new URL(Constants.serverURL + "itemType/");
+        URL url = new URL(Constants.serverURL + "itemType/");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         if (connection != null) {
@@ -121,7 +100,6 @@ public class ItemTypeRequest {
             os.flush();
 
             int HttpResult = connection.getResponseCode();
-            Log.d("httpResult", String.valueOf(HttpResult));
             if (HttpResult == HttpURLConnection.HTTP_OK) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
                 String line = null;
@@ -132,36 +110,41 @@ public class ItemTypeRequest {
                         break;
                     }
                     output += (line + "\n");
-                    Log.d("jsonObject", "AAA" + output);
                 }
                 reader.close();
             }
             connection.disconnect();
         }
 
-        JSONObject newJsonObject = new JSONObject(output);
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
 
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONObject body = outputJsonObject.getJSONObject("body");
 
-        ItemType newItemType = new ItemType(
-                newJsonObject.getInt("id"),
-                newJsonObject.getString("name"),
-                newJsonObject.getString("emoji"),
-                newJsonObject.getInt("count"),
-                newJsonObject.getInt("amount"));
-        return newItemType;
+            return new ItemType(
+                    body.getInt("id"),
+                    body.getString("name"),
+                    body.getString("emoji"),
+                    body.getInt("amount"),
+                    body.getInt("count"),
+                    ItemStatus.stringToItemStatus(body.getString("status"))
+            );
+        }
+        else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static boolean editItem(ItemType itemType) throws IOException, JSONException {
+    public static void editItem(ItemType itemType) throws IOException, JSONException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("id", itemType.getId());
         jsonObject.put("name", itemType.getName());
         jsonObject.put("emoji", itemType.getEmoji());
-        jsonObject.put("count", itemType.getCount());
-        jsonObject.put("amount", itemType.getAmount());
 
-        java.net.URL url = new URL(Constants.serverURL + "itemType/");
+        URL url = new URL(Constants.serverURL + "itemType/");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         if (connection != null) {
@@ -195,24 +178,24 @@ public class ItemTypeRequest {
             }
             connection.disconnect();
         }
-        if(output.equals("true")) {
-            return true;
-        }
-        else {
-            return false;
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
+
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 
-    public static void deleteItem(int id) throws JSONException, IOException {
+    public static void deactivateItem(int id) throws IOException, JSONException, InternalServerException {
         String output = "";
 
-        java.net.URL url = new URL(Constants.serverURL + "itemType/"+id);
+        URL url = new URL(Constants.serverURL + "itemType/deactivate/"+id);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 
         if (connection != null) {
             connection.setConnectTimeout(10000);
-            connection.setRequestMethod("DELETE");
+            connection.setRequestMethod("PUT");
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
             String line = null;
 
@@ -225,6 +208,12 @@ public class ItemTypeRequest {
             }
             reader.close();
             connection.disconnect();
+        }
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
+
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 }

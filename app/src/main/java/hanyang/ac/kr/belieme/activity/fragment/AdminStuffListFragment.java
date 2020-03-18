@@ -19,8 +19,10 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.activity.AddItemActivity;
 import hanyang.ac.kr.belieme.adapter.AdminStuffAdapter;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 import hanyang.ac.kr.belieme.R;
@@ -69,23 +71,27 @@ public class AdminStuffListFragment extends Fragment {
         itemTypeReceiveTask.execute();
     }
 
-    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ArrayList<ItemType>> {
+    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<ItemType>>> {
 
         @Override
-        protected ArrayList<ItemType> doInBackground(Void... voids) {
+        protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
             try {
-                return ItemTypeRequest.getList();
-            } catch (JSONException e) {
+                return new ExceptionAdder<>(ItemTypeRequest.getList());
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<ItemType> result) {
-            adapter.update(result);
+        protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
+            if (result.getBody() != null) {
+                adapter.update(result.getBody());
+            } else {
+                ArrayList<ItemType> error = new ArrayList<>();
+                error.add(new ItemType(result.getException().getMessage()));
+                adapter.update(error);
+            }
         }
     }
 }

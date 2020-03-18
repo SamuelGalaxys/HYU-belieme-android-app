@@ -2,7 +2,7 @@ package hanyang.ac.kr.belieme.dataType;
 
 import androidx.annotation.NonNull;
 
-public enum ItemStatus {USABLE, UNUSABLE, ERROR;
+public enum ItemStatus {USABLE, UNUSABLE, INACTIVE, ERROR;
 
     public String toKoreanString() {
         switch (this) {
@@ -10,6 +10,8 @@ public enum ItemStatus {USABLE, UNUSABLE, ERROR;
                 return "대여 가능";
             case UNUSABLE:
                 return "대여 불가";
+            case INACTIVE:
+                return "사용 불가";
             default :
                 return "ERROR";
         }
@@ -22,6 +24,8 @@ public enum ItemStatus {USABLE, UNUSABLE, ERROR;
                 return "USABLE";
             case UNUSABLE:
                 return "UNUSABLE";
+            case INACTIVE:
+                return "INACTIVE";
             default :
                 return "ERROR";
         }
@@ -33,6 +37,8 @@ public enum ItemStatus {USABLE, UNUSABLE, ERROR;
                 return USABLE;
             case "UNUSABLE" :
                 return UNUSABLE;
+            case "INACTIVE" :
+                return INACTIVE;
             default :
                 return ERROR;
         }

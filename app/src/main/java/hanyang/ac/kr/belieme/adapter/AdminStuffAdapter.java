@@ -3,6 +3,7 @@ package hanyang.ac.kr.belieme.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,9 +23,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.EditItemActivity;
-import hanyang.ac.kr.belieme.dataType.Item;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 
@@ -48,14 +51,18 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        if(viewType == Item.VIEW_TYPE_HEADER) {
+        if(viewType == ItemType.VIEW_TYPE_HEADER) {
             ViewGroup group = (ViewGroup)inflater.inflate(R.layout.header_cell, parent, false);
             HeaderViewHolder headerViewHolder = new HeaderViewHolder(group);
             return headerViewHolder;
-        } else if(viewType == Item.VIEW_TYPE_ITEM) {
+        } else if(viewType == ItemType.VIEW_TYPE_ITEM) {
             ViewGroup group = (ViewGroup)inflater.inflate(R.layout.stuff_cell, parent, false);
             ItemViewHolder itemViewHolder = new ItemViewHolder(group);
             return itemViewHolder;
+        } else if(viewType == ItemType.VIEW_TYPE_ERROR) {
+            ViewGroup group = (ViewGroup)inflater.inflate(R.layout.error_cell, parent, false);
+            ErrorViewHolder errorViewHolder = new ErrorViewHolder(group);
+            return errorViewHolder;
         }
         else {
             return null;
@@ -66,7 +73,7 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if(holder instanceof HeaderViewHolder) {
             HeaderViewHolder headerViewHolder = (HeaderViewHolder)holder;
-            headerViewHolder.headerTitle.setText(itemTypeList.get(position).getStatusKorean());
+            headerViewHolder.headerTitle.setText(itemTypeList.get(position).getStatus().toKoreanString());
         } else if(holder instanceof  ItemViewHolder) {
             final ItemType itemType = itemTypeList.get(position);
             final ItemViewHolder itemViewHolder = (ItemViewHolder)holder;
@@ -75,15 +82,9 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
             itemViewHolder.name.setText(itemType.getName());
             itemViewHolder.count.setText(itemType.getAmount() + "개 중" + " " + itemType.getCount() + "개 사용 가능");
             itemViewHolder.btn.setVisibility(View.GONE);
-
-            switch (itemType.getStatusKorean()) {
-                case "대여 가능" :
-                case "대여 불가" :
-                default: {
-                    break;
-                }
-            }
-
+        } else if(holder instanceof ErrorViewHolder) {
+            ErrorViewHolder errorViewHolder = (ErrorViewHolder)holder;
+            errorViewHolder.errorMessage.setText(itemTypeList.get(position).getErrorMessage());
         }
     }
 
@@ -99,60 +100,8 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
 
     public void update(ArrayList<ItemType> list) {
         itemTypeList.clear();
-        itemTypeList.addAll(addHeaders(list));
+        itemTypeList.addAll(ItemType.addHeaders(list));
         notifyDataSetChanged();
-    }
-
-    public static ArrayList<ItemType> sortWithStatus(ArrayList<ItemType> list) {
-        ArrayList<ItemType> usableList = new ArrayList<>();
-        ArrayList<ItemType> unusableList = new ArrayList<>();
-
-        for(int i = 0; i < list.size(); i++) {
-            ItemType itemType = list.get(i);
-            if(itemType.getCount() > 0 ) {
-                usableList.add(itemType);
-            }
-            else {
-                unusableList.add(itemType);
-            }
-        }
-        ArrayList<ItemType> result = new ArrayList<>();
-        result.addAll(usableList);
-        result.addAll(unusableList);
-
-        return result;
-    }
-
-    public static ArrayList<ItemType> addHeaders(ArrayList<ItemType> list) {
-        ArrayList<ItemType> sortedList = sortWithStatus(list);
-        ArrayList<ItemType> listWithHeaders = new ArrayList<>();
-        ItemType firstOfList = new ItemType();
-        firstOfList.setCount(1);//usable header
-        firstOfList.setViewType(ItemType.VIEW_TYPE_HEADER);
-        listWithHeaders.add(firstOfList);
-
-        boolean unusableHeaderAdded = false;
-        for(int i = 0; i < sortedList.size(); i++) {
-            if(!unusableHeaderAdded && sortedList.get(i).getCount() <= 0) {
-                ItemType header = new ItemType();
-                header.setViewType(ItemType.VIEW_TYPE_HEADER);
-                header.setCount(0);//unusable header
-                listWithHeaders.add(header);
-                unusableHeaderAdded = true;
-                i--;
-            }
-            else {
-                sortedList.get(i).setViewType(ItemType.VIEW_TYPE_ITEM);
-                listWithHeaders.add(sortedList.get(i));
-            }
-        }
-        if(!unusableHeaderAdded) {
-            ItemType header = new ItemType();
-            header.setViewType(ItemType.VIEW_TYPE_HEADER);
-            header.setCount(0);//unusable header
-            listWithHeaders.add(header);
-        }
-        return listWithHeaders;
     }
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
@@ -160,6 +109,9 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             headerTitle = itemView.findViewById(R.id.listHeaderCell_textView);
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) itemView.getLayoutParams();
+            params.leftMargin = 16;
+            itemView.setLayoutParams(params);
         }
     }
 
@@ -215,42 +167,57 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
         };
     }
 
-    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ArrayList<ItemType>> {
-
-        @Override
-        protected ArrayList<ItemType> doInBackground(Void... voids) {
-            try {
-                return ItemTypeRequest.getList();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<ItemType> result) {
-            update(result);
+    private class ErrorViewHolder extends RecyclerView.ViewHolder {
+        TextView errorMessage;
+        public ErrorViewHolder(@NonNull View itemView) {
+            super(itemView);
+            errorMessage = itemView.findViewById(R.id.errorCell_textView_message);
         }
     }
 
-    private class ItemTypeDeleteTask extends AsyncTask<Integer, Void, Void> {
+    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<ItemType>>> {
 
         @Override
-        protected Void doInBackground(Integer... integers) {
+        protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
             try {
-                ItemTypeRequest.deleteItem(integers[0]);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(ItemTypeRequest.getList());
+            } catch (Exception e) {
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
+            if (result.getBody() != null) {
+                update(result.getBody());
+            } else {
+                ArrayList<ItemType> error = new ArrayList<>();
+                error.add(new ItemType(result.getException().getMessage()));
+                update(error);
+            }
+        }
+    }
+
+    private class ItemTypeDeleteTask extends AsyncTask<Integer, Void, ExceptionAdder<Void>> {
+
+        @Override
+        protected ExceptionAdder<Void> doInBackground(Integer... integers) {
+            try {
+                ItemTypeRequest.deactivateItem(integers[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ExceptionAdder<>(e);
+            }
+            return new ExceptionAdder<>();
+        }
+
+        @Override
+        protected void onPostExecute(ExceptionAdder<Void> result) {
+            if(result.getException() == null) {
+                Toast.makeText(context, "물품이 비활성화 되었습니다.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
             ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
             itemTypeReceiveTask.execute();
         }

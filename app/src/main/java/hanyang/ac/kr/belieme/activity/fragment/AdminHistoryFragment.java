@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -17,7 +18,9 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.adapter.AdminHistoryAdapter;
+import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
 import hanyang.ac.kr.belieme.R;
@@ -47,22 +50,33 @@ public class AdminHistoryFragment extends Fragment {
         return layoutView;
     }
 
-    private class HistoryReceiveTask extends AsyncTask<Void, Void, ArrayList<History>> {
+    private class HistoryReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<History>>> {
         @Override
-        protected ArrayList<History> doInBackground(Void... voids) {
+        protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
-                return HistoryRequest.getList();
+                return new ExceptionAdder<>(HistoryRequest.getList());
             } catch (JSONException e) {
                 e.printStackTrace();
+                return new ExceptionAdder<>(e);
             } catch (IOException e) {
                 e.printStackTrace();
+                return new ExceptionAdder<>(e);
+            } catch (InternalServerException e) {
+                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<History> result) {
-            adapter.update(result);
+        protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
+            if(result.getBody() != null) {
+                adapter.update(result.getBody());
+            }
+            else {
+                ArrayList<History> error = new ArrayList<>();
+                error.add(new History(result.getException().getMessage()));
+                adapter.update(error);
+            }
         }
     }
 }

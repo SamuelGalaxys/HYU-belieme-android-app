@@ -1,7 +1,5 @@
 package hanyang.ac.kr.belieme.dataType;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,10 +14,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import hanyang.ac.kr.belieme.Constants;
+import hanyang.ac.kr.belieme.Exception.ConnectionFailedException;
+import hanyang.ac.kr.belieme.Exception.HttpRequestException;
+import hanyang.ac.kr.belieme.Exception.InternalServerException;
 
 public class HistoryRequest {
 
-    public static History getHistoryById(int id) throws JSONException, IOException {
+    public static History getHistoryById(int id) throws JSONException, IOException, InternalServerException {
         String output = "";
         URL url = new URL(Constants.serverURL + "history/" + id);
 
@@ -45,24 +46,36 @@ public class HistoryRequest {
         }
 
         JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
 
-        return new History(
-                jsonObject.getInt("id"),
-                jsonObject.getInt("typeId"),
-                jsonObject.getInt("itemNum"),
-                jsonObject.getString("requesterName"),
-                jsonObject.getInt("requesterId"),
-                jsonObject.getString("managerName"),
-                jsonObject.getInt("managerId"),
-                new Date(jsonObject.getInt("requestTimeStamp")*1000),
-                new Date(jsonObject.getInt("responseTimeStamp")*1000),
-                new Date(jsonObject.getInt("returnedTimeStamp")*1000),
-                HistoryStatus.stringToHistoryStatus(jsonObject.getString("status")),
-                jsonObject.getString("typeName")
-        );
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONObject body = jsonObject.getJSONObject("body");
+
+            return new History(
+                    body.getInt("id"),
+                    body.getInt("typeId"),
+                    body.getInt("itemNum"),
+                    body.getString("requesterName"),
+                    body.getInt("requesterId"),
+                    body.getString("responseManagerName"),
+                    body.getInt("responseManagerId"),
+                    body.getString("returnManagerName"),
+                    body.getInt("returnManagerId"),
+                    new Date(((long) body.getInt("requestTimeStamp")) * 1000L),
+                    new Date(((long) body.getInt("responseTimeStamp")) * 1000L),
+                    new Date(((long) body.getInt("returnTimeStamp")) * 1000L),
+                    new Date(((long) body.getInt("cancelTimeStamp")) * 1000L),
+                    HistoryStatus.stringToHistoryStatus(body.getString("status")),
+                    body.getString("typeName"),
+                    body.getString("typeEmoji")
+            );
+        }
+        else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static ArrayList<History> getList() throws JSONException, IOException {
+    public static ArrayList<History> getList() throws JSONException, IOException, InternalServerException {
         String output = "";
         URL url = new URL(Constants.serverURL + "history/");
 
@@ -89,32 +102,42 @@ public class HistoryRequest {
             connection.disconnect();
         }
 
-        Log.d("jsonArray", output);
-        JSONArray jsonArray = new JSONArray(output);
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
 
 
-        ArrayList<History> items = new ArrayList<>();
+        if(header.getInt("code") == InternalServerException.OK) {
+            ArrayList<History> items = new ArrayList<>();
+            JSONArray body = jsonObject.getJSONArray("body");
 
-        for (int i = 0; i < jsonArray.length(); i++) {
-            items.add(new History(
-                    jsonArray.getJSONObject(i).getInt("id"),
-                    jsonArray.getJSONObject(i).getInt("typeId"),
-                    jsonArray.getJSONObject(i).getInt("itemNum"),
-                    jsonArray.getJSONObject(i).getString("requesterName"),
-                    jsonArray.getJSONObject(i).getInt("requesterId"),
-                    jsonArray.getJSONObject(i).getString("managerName"),
-                    jsonArray.getJSONObject(i).getInt("managerId"),
-                    new Date(jsonArray.getJSONObject(i).getInt("requestTimeStamp")*1000),
-                    new Date(jsonArray.getJSONObject(i).getInt("responseTimeStamp")*1000),
-                    new Date(jsonArray.getJSONObject(i).getInt("returnedTimeStamp")*1000),
-                    HistoryStatus.stringToHistoryStatus(jsonArray.getJSONObject(i).getString("status")),
-                    jsonArray.getJSONObject(i).getString("typeName")
-            ));
+            for (int i = 0; i < body.length(); i++) {
+                items.add(new History(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("itemNum"),
+                        body.getJSONObject(i).getString("requesterName"),
+                        body.getJSONObject(i).getInt("requesterId"),
+                        body.getJSONObject(i).getString("responseManagerName"),
+                        body.getJSONObject(i).getInt("responseManagerId"),
+                        body.getJSONObject(i).getString("returnManagerName"),
+                        body.getJSONObject(i).getInt("returnManagerId"),
+                        new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000L),
+                        HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji")
+                ));
+            }
+            return items;
         }
-        return items;
+        else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static ArrayList<History> getListByRequesterId(int requesterId ) throws JSONException, IOException {
+    public static ArrayList<History> getListByRequesterId(int requesterId ) throws JSONException, IOException, InternalServerException {
         String output = "";
         URL url = new URL(Constants.serverURL + "history/byRequesterId/" + requesterId);
 
@@ -140,48 +163,49 @@ public class HistoryRequest {
             connection.disconnect();
         }
 
-        JSONArray jsonArray = new JSONArray(output);
+        JSONObject jsonObject = new JSONObject(output);
+        JSONObject header = jsonObject.getJSONObject("header");
 
-        ArrayList<History> items = new ArrayList<>();
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONArray body = jsonObject.getJSONArray("body");
+            ArrayList<History> items = new ArrayList<>();
 
-        for (int i = 0; i < jsonArray.length(); i++) {
-            items.add(new History(
-                    jsonArray.getJSONObject(i).getInt("id"),
-                    jsonArray.getJSONObject(i).getInt("typeId"),
-                    jsonArray.getJSONObject(i).getInt("itemNum"),
-                    jsonArray.getJSONObject(i).getString("requesterName"),
-                    jsonArray.getJSONObject(i).getInt("requesterId"),
-                    jsonArray.getJSONObject(i).getString("managerName"),
-                    jsonArray.getJSONObject(i).getInt("managerId"),
-                    new Date(jsonArray.getJSONObject(i).getInt("requestTimeStamp")*1000),
-                    new Date(jsonArray.getJSONObject(i).getInt("responseTimeStamp")*1000),
-                    new Date(jsonArray.getJSONObject(i).getInt("returnedTimeStamp")*1000),
-                    HistoryStatus.stringToHistoryStatus(jsonArray.getJSONObject(i).getString("status")),
-                    jsonArray.getJSONObject(i).getString("typeName")
-            ));
+            for (int i = 0; i < body.length(); i++) {
+                items.add(new History(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("itemNum"),
+                        body.getJSONObject(i).getString("requesterName"),
+                        body.getJSONObject(i).getInt("requesterId"),
+                        body.getJSONObject(i).getString("responseManagerName"),
+                        body.getJSONObject(i).getInt("responseManagerId"),
+                        body.getJSONObject(i).getString("returnManagerName"),
+                        body.getJSONObject(i).getInt("returnManagerId"),
+                        new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000L),
+                        HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji")
+                ));
+            }
+            return items;
         }
-        return items;
+        else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static History addItem(History item) throws IOException, JSONException {
+    public static History addItem(History item) throws IOException, JSONException, HttpRequestException, ConnectionFailedException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("typeId", item.getTypeId());
-        jsonObject.put("itemNum", item.getItemNum());
         jsonObject.put("requesterName", item.getRequesterName());
         jsonObject.put("requesterId", item.getRequesterId());
-        jsonObject.put("managerName", item.getManagerName());
-        jsonObject.put("managerId", item.getManagerId());
-        jsonObject.put("requestTimeStamp", item.getRequestTimeStamp().getTime() / 1000);
-        if(item.getResponseTimeStamp() != null)
-            jsonObject.put("responseTimeStamp", item.getResponseTimeStamp().getTime() / 1000);
-        if(item.getReturnedTimeStamp() != null)
-            jsonObject.put("returnedTimeStamp", item.getReturnedTimeStamp().getTime() / 1000);
-        jsonObject.put("status", item.getStatus().toString());
 
-
-        java.net.URL url = new URL(Constants.serverURL + "history/");
+        URL url = new URL(Constants.serverURL + "history/");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         if (connection != null) {
@@ -212,41 +236,104 @@ public class HistoryRequest {
                     output += (line + "\n");
                 }
                 reader.close();
+                connection.disconnect();
+            }
+            else {
+                String responseMessage = connection.getResponseMessage();
+                connection.disconnect();
+                throw new HttpRequestException(HttpResult + " " + responseMessage);
+            }
+
+        }
+        else {
+            throw new ConnectionFailedException();
+        }
+
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
+
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONObject body = outputJsonObject.getJSONObject("body");
+
+            History newItem = new History(
+                    body.getInt("id"),
+                    body.getInt("typeId"),
+                    body.getInt("itemNum"),
+                    body.getString("requesterName"),
+                    body.getInt("requesterId"),
+                    body.getString("responseManagerName"),
+                    body.getInt("responseManagerId"),
+                    body.getString("returnManagerName"),
+                    body.getInt("returnManagerId"),
+                    new Date(body.getLong("requestTimeStamp") * 1000L),
+                    new Date(body.getLong("responseTimeStamp") * 1000L),
+                    new Date(body.getLong("returnTimeStamp") * 1000L),
+                    new Date(body.getLong("cancelTimeStamp") * 1000L),
+                    HistoryStatus.stringToHistoryStatus(body.getString("status")),
+                    body.getString("typeName"),
+                    body.getString("typeEmoji")
+            );
+            return newItem;
+        }
+        else {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
+    }
+
+    public static void cancelItem(int id) throws IOException, JSONException, InternalServerException {
+        String output = "";
+
+        URL url = new URL(Constants.serverURL + "history/cancel/" + id);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        if (connection != null) {
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setInstanceFollowRedirects(false);
+            connection.setChunkedStreamingMode(0);
+            connection.setRequestMethod("PUT");
+            connection.setRequestProperty("Content-type", "application/json");
+            connection.setRequestProperty("Accept-Charset", "UTF-8");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+
+            OutputStream os = connection.getOutputStream();
+            os.flush();
+
+            int HttpResult = connection.getResponseCode();
+            if (HttpResult == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                String line = null;
+
+                while (true) {
+                    line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    output += (line + "\n");
+                }
+                reader.close();
             }
             connection.disconnect();
         }
-        JSONObject newJsonObject = new JSONObject(output);
 
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
 
-        History newItem = new History(
-                newJsonObject.getInt("id"),
-                newJsonObject.getInt("typeId"),
-                newJsonObject.getInt("itemNum"),
-                newJsonObject.getString("requesterName"),
-                newJsonObject.getInt("requesterId"),
-                newJsonObject.getString("managerName"),
-                newJsonObject.getInt("managerId"),
-                new Date(newJsonObject.getInt("requestTimeStamp") * 1000),
-                new Date(newJsonObject.getInt("responseTimeStamp") * 1000),
-                new Date(newJsonObject.getInt("returnedTimeStamp") * 1000),
-                HistoryStatus.stringToHistoryStatus(newJsonObject.getString("status")),
-                newJsonObject.getString("typeName") // It's just null
-        );
-        return newItem;
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        }
     }
 
-    public static boolean editItem(History item) throws IOException, JSONException {
+    public static void returnItem(History history) throws IOException, JSONException, InternalServerException {
         String output = "";
+
         JSONObject jsonObject = new JSONObject();
 
-        jsonObject.put("id", item.getId());
-        jsonObject.put("requesterName", item.getRequesterName());
-        jsonObject.put("managerId", item.getManagerId());
-        jsonObject.put("managerName", item.getManagerName());
-        jsonObject.put("status", item.getStatus().toString());
+        jsonObject.put("returnManagerId", history.getResponseManagerId());
+        jsonObject.put("returnManagerName", history.getResponseManagerName());
 
-
-        java.net.URL url = new URL(Constants.serverURL + "history/");
+        URL url = new URL(Constants.serverURL + "history/return/" + history.getId());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         if (connection != null) {
@@ -280,12 +367,60 @@ public class HistoryRequest {
             }
             connection.disconnect();
         }
-        System.out.println(output);
-        if(output.equals("true")) {
-            return true;
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
+
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
-        else {
-            return false;
+    }
+
+    public static void responseItem(History history) throws IOException, JSONException, InternalServerException {
+        String output = "";
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("responseManagerId", history.getResponseManagerId());
+        jsonObject.put("responseManagerName", history.getResponseManagerName());
+
+        URL url = new URL(Constants.serverURL + "history/response/" + history.getId());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        if (connection != null) {
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setInstanceFollowRedirects(false);
+            connection.setChunkedStreamingMode(0);
+            connection.setRequestMethod("PUT");
+            connection.setRequestProperty("Content-type", "application/json");
+            connection.setRequestProperty("Accept-Charset", "UTF-8");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+
+            OutputStream os = connection.getOutputStream();
+            os.write(jsonObject.toString().getBytes());
+            os.flush();
+
+            int HttpResult = connection.getResponseCode();
+            if (HttpResult == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                String line = null;
+
+                while (true) {
+                    line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    output += (line + "\n");
+                }
+                reader.close();
+            }
+            connection.disconnect();
+        }
+        JSONObject outputJsonObject = new JSONObject(output);
+        JSONObject header = outputJsonObject.getJSONObject("header");
+
+        if(header.getInt("code") != InternalServerException.OK) {
+            throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 }
