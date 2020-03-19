@@ -55,14 +55,10 @@ public class UserHistoryFragment extends Fragment {
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
                 return new ExceptionAdder<>(HistoryRequest.getListByRequesterId(Integer.parseInt(Globals.userInfo.getStudentId())));
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InternalServerException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
@@ -70,9 +66,7 @@ public class UserHistoryFragment extends Fragment {
             if (result.getBody() != null) {
                 adapter.update(result.getBody());
             } else {
-                ArrayList<History> error = new ArrayList<>();
-                error.add(new History(result.getException().getMessage()));
-                adapter.update(error);
+                adapter.updateToError(result.getException().getMessage());
             }
         }
     }

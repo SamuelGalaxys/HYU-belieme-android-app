@@ -55,13 +55,7 @@ public class AdminHistoryFragment extends Fragment {
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
                 return new ExceptionAdder<>(HistoryRequest.getList());
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return new ExceptionAdder<>(e);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return new ExceptionAdder<>(e);
-            } catch (InternalServerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
@@ -73,9 +67,7 @@ public class AdminHistoryFragment extends Fragment {
                 adapter.update(result.getBody());
             }
             else {
-                ArrayList<History> error = new ArrayList<>();
-                error.add(new History(result.getException().getMessage()));
-                adapter.update(error);
+                adapter.updateToError(result.getException().getMessage());
             }
         }
     }

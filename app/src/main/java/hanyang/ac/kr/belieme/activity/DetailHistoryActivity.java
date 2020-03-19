@@ -67,13 +67,7 @@ public class DetailHistoryActivity extends AppCompatActivity {
         protected ExceptionAdder<History> doInBackground(Integer... integers) {
             try {
                 return new ExceptionAdder<>(HistoryRequest.getHistoryById(integers[0]));
-            } catch (IOException e) {
-                e.printStackTrace();
-                return new ExceptionAdder<>(e);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return new ExceptionAdder<>(e);
-            } catch (InternalServerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }

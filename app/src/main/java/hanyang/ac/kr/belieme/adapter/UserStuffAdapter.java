@@ -132,6 +132,12 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
+    public void updateToError(String message) {
+        itemTypeList.clear();
+        itemTypeList.add(new ItemType(message));
+        notifyDataSetChanged();
+    }
+
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView headerTitle;
         public HeaderViewHolder(@NonNull View itemView) {
@@ -225,12 +231,10 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
 
         @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
-            if (result.getBody() != null) {
+            if (result.getException() == null) {
                 update(result.getBody());
             } else {
-                ArrayList<ItemType> error = new ArrayList<>();
-                error.add(new ItemType(result.getException().getMessage()));
-                update(error);
+                updateToError(result.getException().getMessage());
             }
         }
     }

@@ -100,6 +100,12 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
+    public void updateToError(String message) {
+        historyList.clear();
+        historyList.add(new History(message));
+        notifyDataSetChanged();
+    }
+
     public static ArrayList<History> sortWithStatus(ArrayList<History> list) {
         ArrayList<History> requestedList = new ArrayList<>();
         ArrayList<History> usingList = new ArrayList<>();
@@ -287,13 +293,7 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
                 return new ExceptionAdder<>(HistoryRequest.getList());
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return new ExceptionAdder<>(e);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return new ExceptionAdder<>(e);
-            } catch (InternalServerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
@@ -305,9 +305,7 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                 update(result.getBody());
             }
             else {
-                ArrayList<History> error = new ArrayList<>();
-                error.add(new History(result.getException().getMessage()));
-                update(error);
+                updateToError(result.getException().getMessage());
             }
         }
     }

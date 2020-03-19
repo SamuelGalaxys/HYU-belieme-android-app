@@ -32,6 +32,7 @@ public class AdminStuffListFragment extends Fragment {
 
     Context context;
     private AdminStuffAdapter adapter;
+    private boolean onlyResume;
 
     @Override
     public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -39,6 +40,7 @@ public class AdminStuffListFragment extends Fragment {
         layoutView = inflater.inflate(R.layout.fragment_stuff_list, container, false);
 
         context = getActivity();
+        onlyResume = false;
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         adapter = new AdminStuffAdapter(context);
@@ -67,8 +69,13 @@ public class AdminStuffListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
-        itemTypeReceiveTask.execute();
+        if(onlyResume == false) {
+            onlyResume = true;
+        }
+        else {
+            ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
+            itemTypeReceiveTask.execute();
+        }
     }
 
     private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<ItemType>>> {
@@ -88,9 +95,7 @@ public class AdminStuffListFragment extends Fragment {
             if (result.getBody() != null) {
                 adapter.update(result.getBody());
             } else {
-                ArrayList<ItemType> error = new ArrayList<>();
-                error.add(new ItemType(result.getException().getMessage()));
-                adapter.update(error);
+                adapter.updateToError(result.getException().getMessage());
             }
         }
     }

@@ -104,6 +104,12 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
+    public void updateToError(String message) {
+        itemTypeList.clear();
+        itemTypeList.add(new ItemType(message));
+        notifyDataSetChanged();
+    }
+
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView headerTitle;
         public HeaderViewHolder(@NonNull View itemView) {
@@ -191,9 +197,7 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
             if (result.getBody() != null) {
                 update(result.getBody());
             } else {
-                ArrayList<ItemType> error = new ArrayList<>();
-                error.add(new ItemType(result.getException().getMessage()));
-                update(error);
+                updateToError(result.getException().getMessage());
             }
         }
     }

@@ -80,6 +80,12 @@ public class EditItemAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
+    public void updateToError(String message) {
+        itemList.clear();
+        itemList.add(new Item(message));
+        notifyDataSetChanged();
+    }
+
     private class ItemViewHolder extends RecyclerView.ViewHolder {
         private TextView itemNum;
         private TextView content;

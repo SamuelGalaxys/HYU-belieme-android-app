@@ -110,9 +110,7 @@ public class EditItemActivity extends AppCompatActivity {
             if (result.getBody() != null) {
                 adapter.update(result.getBody());
             } else {
-                ArrayList<Item> error = new ArrayList<>();
-                error.add(new Item(result.getException().getMessage()));
-                adapter.update(error);
+                adapter.updateToError(result.getException().getMessage());
             }
         }
     }

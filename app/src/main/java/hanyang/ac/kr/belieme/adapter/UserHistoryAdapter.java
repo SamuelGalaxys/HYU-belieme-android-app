@@ -100,6 +100,12 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         notifyDataSetChanged();
     }
 
+    public void updateToError(String message) {
+        historyList.clear();
+        historyList.add(new History(message));
+        notifyDataSetChanged();
+    }
+
     public static ArrayList<History> sortWithStatus(ArrayList<History> list) {
         ArrayList<History> requestedList = new ArrayList<>();
         ArrayList<History> usingList = new ArrayList<>();
@@ -264,14 +270,10 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
             try {
                 return new ExceptionAdder<>(HistoryRequest.getListByRequesterId(Integer.parseInt(Globals.userInfo.getStudentId())));
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InternalServerException e) {
-                e.printStackTrace();
+                return new ExceptionAdder<>(e);
             }
-            return null;
         }
 
         @Override
@@ -279,9 +281,7 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             if (result.getBody() != null) {
                 update(result.getBody());
             } else {
-                ArrayList<History> error = new ArrayList<>();
-                error.add(new History(result.getException().getMessage()));
-                update(error);
+                updateToError(result.getException().getMessage());
             }
         }
     }
@@ -295,17 +295,11 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         protected ExceptionAdder<Void> doInBackground(Integer... integers) {
             try {
                 HistoryRequest.cancelItem(integers[0]);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                new ExceptionAdder<>(e);
-            } catch (InternalServerException e) {
-                e.printStackTrace();
-                new ExceptionAdder<>(e);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                new ExceptionAdder<>(e);
+                return new ExceptionAdder<>(e);
             }
-            return new ExceptionAdder<Void>();
+            return new ExceptionAdder<>();
         }
 
         @Override

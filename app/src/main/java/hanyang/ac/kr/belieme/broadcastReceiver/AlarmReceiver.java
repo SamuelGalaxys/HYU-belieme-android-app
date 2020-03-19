@@ -56,7 +56,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         @Override
         protected void onPostExecute(ExceptionAdder<History> result) {
-            if(result.getException() != null) {
+            if(result.getException() == null) {
                 String type = intent.getStringExtra("type");
                 History history = result.getBody();
                 if (type.equals("forDelayed")) {
@@ -104,7 +104,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                         );
                     }
                 } else if (type.equals("forExpired")) {
-                    if (history.getRequesterId() == PreferenceManager.getInt(context, "gaeinNo") && history.getStatus() == HistoryStatus.EXPIRED) {
+                    if (history.getRequesterId() == Integer.parseInt(PreferenceManager.getString(context, "gaeinNo")) && history.getStatus() == HistoryStatus.EXPIRED) {
                         System.out.println("취소됨");
                         NotificationHelper notificationHelper = new NotificationHelper(context);
                         NotificationCompat.Builder nb = notificationHelper.getChannelNotification(history.getNotificationTitle(), history.getNotificationMessage());
