@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,21 +13,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.adapter.UserStuffAdapter;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
-import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 
 public class UserStuffListFragment extends Fragment {
-    Context context;
+    MainActivity context;
     View layoutView;
 
     boolean onlyResume;
@@ -39,7 +34,7 @@ public class UserStuffListFragment extends Fragment {
     public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         layoutView = inflater.inflate(R.layout.fragment_stuff_list, container, false);
-        context = getActivity();
+        context = (MainActivity)getActivity();
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         adapter = new UserStuffAdapter(context);
@@ -75,11 +70,11 @@ public class UserStuffListFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Log.d("PreExecute", new Date(System.currentTimeMillis()).toString());
         }
 
         @Override
         protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemTypeRequest.getList());
             } catch (Exception e) {
@@ -90,12 +85,18 @@ public class UserStuffListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
-            Log.d("PostExecute", new Date(System.currentTimeMillis()).toString());
             if (result.getException() == null) {
                 adapter.update(result.getBody());
             } else {
                 adapter.updateToError(result.getException().getMessage());
             }
+            context.setChangeModeBtnEnabled(true);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            context.setChangeModeBtnEnabled(false);
+            adapter.updateToProgress();
         }
     }
 }

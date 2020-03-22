@@ -20,22 +20,27 @@ import java.util.ArrayList;
 import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.adapter.UserHistoryAdapter;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
 
 public class UserHistoryFragment extends Fragment {
-    private Context context;
+    private MainActivity context;
     private View layoutView;
 
     private UserHistoryAdapter adapter;
+
+    private boolean onlyResume;
 
     @Override
     public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         layoutView = inflater.inflate(R.layout.fragment_history, container, false);
-        context = getContext();
+        context = (MainActivity)getContext();
+
+        onlyResume = false;
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         adapter = new UserHistoryAdapter(context);
@@ -50,9 +55,22 @@ public class UserHistoryFragment extends Fragment {
         return layoutView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(onlyResume == false) {
+            onlyResume = true;
+        }
+        else {
+            HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+            historyReceiveTask.execute();
+        }
+    }
+
     private class HistoryReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<History>>> {
         @Override
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.getListByRequesterId(Integer.parseInt(Globals.userInfo.getStudentId())));
             } catch (Exception e) {
@@ -68,6 +86,13 @@ public class UserHistoryFragment extends Fragment {
             } else {
                 adapter.updateToError(result.getException().getMessage());
             }
+            context.setChangeModeBtnEnabled(true);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            adapter.updateToProgress();
+            context.setChangeModeBtnEnabled(false);
         }
     }
 }

@@ -97,6 +97,7 @@ public class EditItemActivity extends AppCompatActivity {
     public class ItemGetTask extends AsyncTask<Integer, Void, ExceptionAdder<ArrayList<Item>>> {
         @Override
         protected ExceptionAdder<ArrayList<Item>> doInBackground(Integer... integers) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemRequest.getListByTypeId(integers[0]));
             } catch (Exception e) {
@@ -112,6 +113,11 @@ public class EditItemActivity extends AppCompatActivity {
             } else {
                 adapter.updateToError(result.getException().getMessage());
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            adapter.updateToProgress();
         }
     }
 

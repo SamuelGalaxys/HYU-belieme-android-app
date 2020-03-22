@@ -8,6 +8,7 @@ public class ItemType {
     public static final int VIEW_TYPE_HEADER = 0;
     public static final int VIEW_TYPE_ITEM = 1;
     public static final int VIEW_TYPE_ERROR = 2;
+    public static final int VIEW_TYPE_PROGRESS = 3;
 
 
     private int viewType;
@@ -22,12 +23,6 @@ public class ItemType {
     private String errorMessage;
 
     public ItemType() {
-
-    }
-
-    public ItemType(String errorMessage) {
-        this.viewType = VIEW_TYPE_ERROR;
-        this.errorMessage = errorMessage;
     }
 
     public ItemType(int id, String name, String emoji, int amount, int count) {
@@ -47,6 +42,19 @@ public class ItemType {
         this.count = count;
         this.status = status;
         this.viewType = VIEW_TYPE_ITEM;
+    }
+
+    public static ItemType getErrorItemType(String errorMessage) {
+        ItemType itemType = new ItemType();
+        itemType.setViewType(VIEW_TYPE_ERROR);
+        itemType.setErrorMessage(errorMessage);
+        return itemType;
+    }
+
+    public static ItemType getProgressItemType() {
+        ItemType itemType = new ItemType();
+        itemType.setViewType(VIEW_TYPE_PROGRESS);
+        return itemType;
     }
 
     public int getId() {
@@ -91,6 +99,10 @@ public class ItemType {
 
     public void setViewType(int viewType) {
         this.viewType = viewType;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     public ItemStatus getStatus() {

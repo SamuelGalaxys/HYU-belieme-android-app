@@ -10,13 +10,9 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
@@ -109,7 +105,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                         NotificationHelper notificationHelper = new NotificationHelper(context);
                         NotificationCompat.Builder nb = notificationHelper.getChannelNotification(history.getNotificationTitle(), history.getNotificationMessage());
                         notificationHelper.getManager().notify((int) System.currentTimeMillis() / 1000, nb.build());
-                    } else if (history.getRequesterId() == PreferenceManager.getInt(context, "gaeinNo") && history.getStatus() == HistoryStatus.USING) {
+                    } else if (history.getRequesterId() == Integer.parseInt(PreferenceManager.getString(context, "gaeinNo")) && history.getStatus() == HistoryStatus.USING) {
                         // 반납 기한 아침에 보내기
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(history.getDueDate());

@@ -1,20 +1,29 @@
 package hanyang.ac.kr.belieme.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -28,11 +37,22 @@ import hanyang.ac.kr.belieme.dataType.UserInfo;
 import hanyang.ac.kr.belieme.dataType.UserInfoRequest;
 
 public class LoginActivity extends AppCompatActivity {
-
+    private Context context;
     private WebView webView;
+
+    private ProgressBar progressBar; //쓸까 말까
+
+    private ConstraintLayout loginPart;
+
     private EditText id;
     private EditText password;
-    private Button button;
+    private Button loginButton;
+
+    private ConstraintLayout privacyNoticePart;
+
+    private CheckBox agreeCheckBox;
+    private CheckBox disagreeCheckBox;
+    private Button noticeLoginButton;
 
     private String accessToken;
 
@@ -40,18 +60,78 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        context = getApplicationContext();
 
         webView = findViewById(R.id.login_webView);
+        webView.clearCache(true);
+        webView.clearHistory();
+        webView.clearFormData();
+        webView.clearMatches();
+        webView.clearSslPreferences();
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            CookieSyncManager cookieSyncMngr=CookieSyncManager.createInstance(LoginActivity.this);
+            cookieSyncMngr.startSync();
+            CookieManager cookieManager=CookieManager.getInstance();
+            cookieManager.removeAllCookie();
+            cookieManager.removeSessionCookie();
+            cookieSyncMngr.stopSync();
+            cookieSyncMngr.sync();
+        }else {
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean value) {
+                    Log.d("onReceiveValue", value.toString());
+                }
+            });
+            cookieManager.getInstance().flush();
+        }
+
+        progressBar = findViewById(R.id.login_progressBar);
+
+        loginPart = findViewById(R.id.login_layout_login);
         id = findViewById(R.id.login_editText_id);
         password = findViewById(R.id.login_editText_password);
-        button = findViewById(R.id.login_btn_login);
+        loginButton = findViewById(R.id.login_button_login);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 webView.evaluateJavascript("$('#uid').val('" + id.getText().toString() + "');\n" +
                         "$('#upw').val('" + password.getText().toString() + "');\n" +
                         "$('#login_btn').click();", null);
+            }
+        });
+
+        privacyNoticePart = findViewById(R.id.login_layout_privacyNotice);
+        agreeCheckBox = findViewById(R.id.login_checkBox_agree);
+        disagreeCheckBox = findViewById(R.id.login_checkBox_disagree);
+        noticeLoginButton = findViewById(R.id.login_button_noticeLogin);
+
+        agreeCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    disagreeCheckBox.setChecked(false);
+                }
+            }
+        });
+
+        disagreeCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    agreeCheckBox.setChecked(false);
+                }
+            }
+        });
+
+        noticeLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                webView.evaluateJavascript("$('input:checkbox[name=chkItem]').prop('checked', " + agreeCheckBox.isChecked() + ");\n" +
+                        "$('#btnAgree').click();", null);
             }
         });
 
@@ -71,21 +151,26 @@ public class LoginActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 Log.d("finishedUrl", url);
                 if(url.equals(Constants.loginUrl)) {
-                    id.setVisibility(View.VISIBLE);
-                    password.setVisibility(View.VISIBLE);
-                    button.setVisibility(View.VISIBLE);
+                    privacyNoticePart.setVisibility(View.GONE);
+                    loginPart.setVisibility(View.VISIBLE);
                 }
                 else {
-                    id.setVisibility(View.INVISIBLE);
-                    password.setVisibility(View.INVISIBLE);
-                    button.setVisibility(View.INVISIBLE);
+                    loginPart.setVisibility(View.GONE);
                 }
+
+                if(url.indexOf(Constants.privacyNotice) != -1) {
+                    loginPart.setVisibility(View.GONE);
+                    privacyNoticePart.setVisibility(View.VISIBLE);
+                } else {
+                    privacyNoticePart.setVisibility(View.GONE);
+                }
+
                 if(url.equals(Constants.redirectUrl + "index.page")) {
                     NetworkTask networkTask = new NetworkTask();
                     networkTask.execute(accessToken);
                 }
+
                 if(url.indexOf(Constants._5ErrorRedirectUrl) != -1) {
-                    Toast.makeText(getApplicationContext(), "비밀번호를 5회 이상 잘못 입력하였습니다. 포탈에서 본인 인증을 통해 비밀번호를 변경하여야 로그인 가능합니다", Toast.LENGTH_LONG).show();
                     webView.loadUrl(Constants.getAuthorizeUrl);
                 }
             }
@@ -113,9 +198,6 @@ public class LoginActivity extends AppCompatActivity {
         webView.getSettings().setJavaScriptEnabled(true);
 
         webView.loadUrl(Constants.getAuthorizeUrl);
-
-
-
     }
 
     private class NetworkTask extends AsyncTask<String, Void, UserInfo> {
@@ -123,7 +205,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected UserInfo doInBackground(String... strings) {
             try {
-                UserInfoRequest userInfoRequest = new UserInfoRequest(getApplicationContext());
+                UserInfoRequest userInfoRequest = new UserInfoRequest(context);
                 return userInfoRequest.getUserInfo(strings[0]);
             } catch (IOException e) {
                 e.printStackTrace();

@@ -8,6 +8,7 @@ public class History {
     public static final int VIEW_TYPE_HEADER = 0;
     public static final int VIEW_TYPE_ITEM = 1;
     public static final int VIEW_TYPE_ERROR = 2;
+    public static final int VIEW_TYPE_PROGRESS = 3;
 
     private int viewType;
 
@@ -38,11 +39,6 @@ public class History {
     private String errorMessage;
 
     public History() {
-    }
-
-    public History(String errorMessage) {
-        this.viewType = VIEW_TYPE_ERROR;
-        this.errorMessage = errorMessage;
     }
 
     public History(int id, int typeId, int itemNum, String requesterName, int requesterId, String responseManagerName, int responseManagerId, String returnManagerName, int returnManagerId, Date requestTimeStamp, Date responseTimeStamp, Date returnTimeStamp, Date cancelTimeStamp, HistoryStatus status, String typeName, String typeEmoji) {
@@ -97,6 +93,19 @@ public class History {
         this.status = HistoryStatus.REQUESTED;
         this.typeName = "";
         this.typeEmoji = "";
+    }
+
+    public static History getErrorHistory(String errorMessage) {
+        History history = new History();
+        history.setErrorMessage(errorMessage);
+        history.setViewType(VIEW_TYPE_ERROR);
+        return history;
+    }
+
+    public static History getProgressHistory() {
+        History history = new History();
+        history.setViewType(VIEW_TYPE_PROGRESS);
+        return history;
     }
 
     public int getId() {

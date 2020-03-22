@@ -67,6 +67,7 @@ public class DetailItemActivity extends AppCompatActivity {
 
         @Override
         protected ExceptionAdder<Item> doInBackground(Integer... integers) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemRequest.getItem(integers[0]));
             } catch (Exception e) {
@@ -158,6 +159,13 @@ public class DetailItemActivity extends AppCompatActivity {
                 error.add(new Pair("__ERROR__", result.getException().getMessage()));
                 adapter.update(error);
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            ArrayList<Pair<String, String>> list = new ArrayList<>();
+            list.add(new Pair<String, String>("__PROGRESS__", ""));
+            adapter.update(list);
         }
     }
 

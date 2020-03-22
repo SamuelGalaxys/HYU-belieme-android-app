@@ -11,19 +11,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.EditItemActivity;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
@@ -63,6 +60,10 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
             ViewGroup group = (ViewGroup)inflater.inflate(R.layout.error_cell, parent, false);
             ErrorViewHolder errorViewHolder = new ErrorViewHolder(group);
             return errorViewHolder;
+        } else if(viewType == ItemType.VIEW_TYPE_PROGRESS) {
+            ViewGroup group = (ViewGroup)inflater.inflate(R.layout.progress_cell, parent, false);
+            ProgressViewHolder viewHolder = new ProgressViewHolder(group);
+            return viewHolder;
         }
         else {
             return null;
@@ -85,6 +86,8 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
         } else if(holder instanceof ErrorViewHolder) {
             ErrorViewHolder errorViewHolder = (ErrorViewHolder)holder;
             errorViewHolder.errorMessage.setText(itemTypeList.get(position).getErrorMessage());
+        } else if(holder instanceof ProgressViewHolder) {
+            ProgressViewHolder progressViewHolder = (ProgressViewHolder) holder;
         }
     }
 
@@ -106,7 +109,13 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
 
     public void updateToError(String message) {
         itemTypeList.clear();
-        itemTypeList.add(new ItemType(message));
+        itemTypeList.add(ItemType.getErrorItemType(message));
+        notifyDataSetChanged();
+    }
+
+    public void updateToProgress() {
+        itemTypeList.clear();
+        itemTypeList.add(ItemType.getProgressItemType());
         notifyDataSetChanged();
     }
 
@@ -178,6 +187,14 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
         public ErrorViewHolder(@NonNull View itemView) {
             super(itemView);
             errorMessage = itemView.findViewById(R.id.errorCell_textView_message);
+        }
+    }
+
+    private class ProgressViewHolder extends RecyclerView.ViewHolder {
+        ProgressBar progressBar;
+        public ProgressViewHolder(@NonNull View itemView) {
+            super(itemView);
+            progressBar = itemView.findViewById(R.id.progressBar);
         }
     }
 

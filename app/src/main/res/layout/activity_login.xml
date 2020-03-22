@@ -6,62 +6,185 @@
     android:layout_height="match_parent"
     tools:context=".activity.LoginActivity">
 
-    <LinearLayout
-        android:id="@+id/linearLayout2"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/login_layout_part"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/login_webView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-            android:id="@+id/login_editText_id"
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/login_progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/login_layout_privacyNotice"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="32dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:layout_marginRight="32dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="16dp"
-            android:autofillHints=""
-            android:hint="@string/login_id"
-            android:visibility="invisible" />
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/login_layout_part"
+            app:layout_constraintEnd_toEndOf="@+id/login_layout_part"
+            app:layout_constraintStart_toStartOf="@+id/login_layout_part"
+            app:layout_constraintTop_toTopOf="@id/login_layout_part">
 
-        <EditText
-            android:id="@+id/login_editText_password"
-            android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/login_textView_noticeTittle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="개인정보의 제 3자 제공동의 요청"
+                android:textColor="@color/colorBlack"
+                android:textSize="24sp"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintTop_toTopOf="@+id/login_layout_privacyNotice" />
+
+            <TextView
+                android:id="@+id/login_textView_noticeText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="한양대학교 OPEN API는 아래와 같은 개인정보를 컴소 빌리미 에 제공합니다"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintTop_toBottomOf="@+id/login_textView_noticeTittle" />
+
+            <TextView
+                android:id="@+id/login_textView_details"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="32dp"
+                android:text="로그인한 사용자의 성명, 사용자ID, 학번(개인번호),  재학(재직) 여부,  소속대학, 소속명, 소속코드, 소속ID, 사용자구분명의 정보"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintTop_toBottomOf="@+id/login_textView_noticeText" />
+
+            <CheckBox
+                android:id="@+id/login_checkBox_agree"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="동의합니다."
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintTop_toBottomOf="@+id/login_textView_details" />
+
+            <Button
+                android:id="@+id/login_button_noticeLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="로그인 하기"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_privacyNotice"
+                app:layout_constraintTop_toBottomOf="@+id/login_checkBox_agree" />
+
+            <CheckBox
+                android:id="@+id/login_checkBox_disagree"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:text="동의하지 않습니다."
+                app:layout_constraintEnd_toStartOf="@+id/login_checkBox_agree"
+                app:layout_constraintTop_toBottomOf="@+id/login_textView_details" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/login_layout_login"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="32dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:layout_marginRight="32dp"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/login_password"
-            android:password="true"
-            android:visibility="invisible" />
+            android:layout_marginEnd="16dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/login_layout_part"
+            app:layout_constraintStart_toStartOf="@+id/login_layout_part"
+            app:layout_constraintTop_toTopOf="@+id/login_layout_part">
 
-        <Button
-            android:id="@+id/login_btn_login"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="Button"
-            android:visibility="invisible" />
+            <EditText
+                android:id="@+id/login_editText_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:hint="@string/login_id"
+                android:maxLines="1"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_login"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_login"
+                app:layout_constraintTop_toTopOf="@+id/login_layout_login" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_margin="16dp"
-            app:srcCompat="@drawable/cse_nine" />
-    </LinearLayout>
+            <EditText
+                android:id="@+id/login_editText_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:hint="@string/login_password"
+                android:maxLines="1"
+                android:password="true"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_login"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_login"
+                app:layout_constraintTop_toBottomOf="@+id/login_editText_id" />
+
+            <Button
+                android:id="@+id/login_button_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Button"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="@+id/login_layout_login"
+                app:layout_constraintStart_toStartOf="@+id/login_layout_login"
+                app:layout_constraintTop_toBottomOf="@+id/login_editText_password" />
+
+            <ImageView
+                android:id="@+id/login_imageView_cseLogo"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_margin="16dp"
+                android:background="@drawable/cse_nine"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/login_button_login" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <WebView
         android:id="@+id/login_webView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

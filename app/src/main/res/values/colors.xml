@@ -8,5 +8,5 @@
     <color name="colorHanyagWhite">#FFFFFF</color>
     <color name="colorUsedGreen">#92CBC5</color>
     <color name="colorWarnRed"> #B92D00 </color>
-    <color name="colorDisableGray"> #BDBDBD </color>
+    <color name="colorDisableGray">#BDBDBD</color>
 </resources>

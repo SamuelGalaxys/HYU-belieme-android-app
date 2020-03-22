@@ -4,6 +4,8 @@ public class Item {
     public static final int VIEW_TYPE_HEADER = 0;
     public static final int VIEW_TYPE_ITEM = 1;
     public static final int VIEW_TYPE_ERROR = 2;
+    public static final int VIEW_TYPE_PROGRESS = 3;
+
     private int viewType;
 
     private int id;
@@ -18,13 +20,12 @@ public class Item {
 
     private String errorMessage;
 
-    public Item(int typeId) {
-        this.typeId = typeId;
+    public Item() {
+
     }
 
-    public Item(String errorMessage) {
-        this.viewType = VIEW_TYPE_ERROR;
-        this.errorMessage = errorMessage;
+    public Item(int typeId) {
+        this.typeId = typeId;
     }
 
     public Item(int id, int typeId, int num, ItemStatus status, int lastHistoryId, String typeName, String typeEmoji, History lastHistory) {
@@ -37,6 +38,20 @@ public class Item {
         this.typeEmoji = typeEmoji;
         this.viewType = VIEW_TYPE_ITEM;
         this.lastHistory = lastHistory;
+    }
+
+    public static Item getErrorItem(String errorMessage) {
+        Item item = new Item();
+        item.setViewType(VIEW_TYPE_ERROR);
+        item.setErrorMessage(errorMessage);
+
+        return item;
+    }
+
+    public static Item getProgressItem() {
+        Item item = new Item();
+        item.setViewType(VIEW_TYPE_PROGRESS);
+        return item;
     }
 
     public int getViewType() {
@@ -113,5 +128,9 @@ public class Item {
 
     public void setLastHistory(History lastHistory) {
         this.lastHistory = lastHistory;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

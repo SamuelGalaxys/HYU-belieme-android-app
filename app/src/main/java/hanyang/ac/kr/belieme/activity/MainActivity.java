@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
         status = status_e.STUFF;
         title.setText("물품");
 
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -145,5 +146,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    public void setChangeModeBtnEnabled(boolean enabled) {
+        changeModeBtn.setEnabled(enabled);
     }
 }

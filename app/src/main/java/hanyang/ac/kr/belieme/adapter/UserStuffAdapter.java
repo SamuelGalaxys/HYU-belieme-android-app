@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,8 +68,11 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
             ViewGroup group = (ViewGroup)inflater.inflate(R.layout.error_cell, parent, false);
             ErrorViewHolder errorViewHolder = new ErrorViewHolder(group);
             return errorViewHolder;
-        }
-        else {
+        } else if(viewType == ItemType.VIEW_TYPE_PROGRESS) {
+            ViewGroup group = (ViewGroup)inflater.inflate(R.layout.progress_cell, parent, false);
+            ProgressViewHolder viewHolder = new ProgressViewHolder(group);
+            return viewHolder;
+        } else {
             return null;
         }
     }
@@ -113,6 +117,8 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
         } else if(holder instanceof ErrorViewHolder) {
             ErrorViewHolder errorViewHolder = (ErrorViewHolder)holder;
             errorViewHolder.errorMessage.setText(itemTypeList.get(position).getErrorMessage());
+        }  else if(holder instanceof ProgressViewHolder) {
+            ProgressViewHolder progressViewHolder = (ProgressViewHolder) holder;
         }
     }
 
@@ -134,7 +140,13 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
 
     public void updateToError(String message) {
         itemTypeList.clear();
-        itemTypeList.add(new ItemType(message));
+        itemTypeList.add(ItemType.getErrorItemType(message));
+        notifyDataSetChanged();
+    }
+
+    public void updateToProgress() {
+        itemTypeList.clear();
+        itemTypeList.add(ItemType.getProgressItemType());
         notifyDataSetChanged();
     }
 
@@ -173,6 +185,14 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
         public ErrorViewHolder(@NonNull View itemView) {
             super(itemView);
             errorMessage = itemView.findViewById(R.id.errorCell_textView_message);
+        }
+    }
+
+    private class ProgressViewHolder extends RecyclerView.ViewHolder {
+        ProgressBar progressBar;
+        public ProgressViewHolder(@NonNull View itemView) {
+            super(itemView);
+            progressBar = itemView.findViewById(R.id.progressBar);
         }
     }
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.activity.AddItemActivity;
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.adapter.AdminStuffAdapter;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
@@ -28,9 +29,8 @@ import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 import hanyang.ac.kr.belieme.R;
 
 public class AdminStuffListFragment extends Fragment {
-    View layoutView;
-
-    Context context;
+    private View layoutView;
+    private MainActivity context;
     private AdminStuffAdapter adapter;
     private boolean onlyResume;
 
@@ -39,7 +39,8 @@ public class AdminStuffListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         layoutView = inflater.inflate(R.layout.fragment_stuff_list, container, false);
 
-        context = getActivity();
+        context = (MainActivity)getActivity();
+
         onlyResume = false;
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
@@ -82,6 +83,7 @@ public class AdminStuffListFragment extends Fragment {
 
         @Override
         protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemTypeRequest.getList());
             } catch (Exception e) {
@@ -97,6 +99,13 @@ public class AdminStuffListFragment extends Fragment {
             } else {
                 adapter.updateToError(result.getException().getMessage());
             }
+            context.setChangeModeBtnEnabled(true);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            context.setChangeModeBtnEnabled(false);
+            adapter.updateToProgress();
         }
     }
 }

@@ -19,6 +19,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.R;
@@ -65,6 +66,7 @@ public class DetailHistoryActivity extends AppCompatActivity {
     private class GetItemTask extends AsyncTask<Integer, Void, ExceptionAdder<History>> {
         @Override
         protected ExceptionAdder<History> doInBackground(Integer... integers) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.getHistoryById(integers[0]));
             } catch (Exception e) {
@@ -133,9 +135,17 @@ public class DetailHistoryActivity extends AppCompatActivity {
                 adapter.update(list);
             }
             else {
-                Toast.makeText(getApplicationContext(), result.getException().getMessage(), Toast.LENGTH_LONG).show();
-                finish();
+                ArrayList<Pair<String, String>> error = new ArrayList<>();
+                error.add(new Pair("__ERROR__", result.getException().getMessage()));
+                adapter.update(error);
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            ArrayList<Pair<String, String>> list = new ArrayList<>();
+            list.add(new Pair<String, String>("__PROGRESS__", ""));
+            adapter.update(list);
         }
     }
 }
