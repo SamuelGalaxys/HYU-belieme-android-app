@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,13 +18,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.DetailHistoryActivity;
@@ -34,19 +32,26 @@ import hanyang.ac.kr.belieme.dataType.HistoryStatus;
 public class AdminHistoryAdapter extends RecyclerView.Adapter {
 
     Context context;
-    List<History> historyList;
+    List<History> displayedHistoryList;
+    ArrayList<History> historyList;
+
+    private boolean isReturnedHidden;
+    private boolean isExpiredHidden;
 
     public AdminHistoryAdapter() {
     }
 
     public AdminHistoryAdapter(Context context) {
         this.context = context;
+        displayedHistoryList = new ArrayList<>();
         historyList = new ArrayList<>();
+        isReturnedHidden = true;
+        isExpiredHidden = true;
     }
 
     public AdminHistoryAdapter(Context context, List<History> historyList) {
         this.context = context;
-        this.historyList = historyList;
+        this.displayedHistoryList = historyList;
     }
 
     @NonNull
@@ -79,12 +84,35 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if(holder instanceof HeaderViewHolder) {
             HeaderViewHolder headerViewHolder = (HeaderViewHolder)holder;
-            headerViewHolder.headerTitle.setText(historyList.get(position).getStatus().toKoreanString());
+            headerViewHolder.headerTitle.setText(displayedHistoryList.get(position).getStatus().toKoreanString());
+            if(displayedHistoryList.get(position).getStatus() == HistoryStatus.RETURNED) {
+                headerViewHolder.checkBox.setVisibility(View.VISIBLE);
+                headerViewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        isReturnedHidden = !isChecked;
+                        displayedHistoryList = addHeaders(sortWithStatus(historyList));
+                        notifyDataSetChanged();
+                    }
+                });
+            } else if(displayedHistoryList.get(position).getStatus() == HistoryStatus.EXPIRED) {
+                headerViewHolder.checkBox.setVisibility(View.VISIBLE);
+                headerViewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        isExpiredHidden = !isChecked;
+                        displayedHistoryList = addHeaders(sortWithStatus(historyList));
+                        notifyDataSetChanged();
+                    }
+                });
+            } else {
+                headerViewHolder.checkBox.setVisibility(View.INVISIBLE);
+            }
         } else if(holder instanceof  ItemViewHolder) {
-            ((ItemViewHolder)holder).bind(historyList.get(position));
+            ((ItemViewHolder)holder).bind(displayedHistoryList.get(position));
         } else if(holder instanceof ErrorViewHolder) {
             ErrorViewHolder errorViewHolder = (ErrorViewHolder)holder;
-            errorViewHolder.errorMessage.setText(historyList.get(position).getErrorMessage());
+            errorViewHolder.errorMessage.setText(displayedHistoryList.get(position).getErrorMessage());
         } else if(holder instanceof ProgressViewHolder) {
             ProgressViewHolder viewHolder = (ProgressViewHolder)holder;
         }
@@ -92,33 +120,47 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return historyList.size();
+        return displayedHistoryList.size();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return historyList.get(position).getViewType();
+        return displayedHistoryList.get(position).getViewType();
     }
 
     public void update(ArrayList<History> list) {
         historyList.clear();
-        historyList.addAll(addHeaders(list));
+        historyList.addAll(list);
+        displayedHistoryList.clear();
+        displayedHistoryList.addAll(addHeaders(list));
         notifyDataSetChanged();
     }
 
     public void updateToError(String message) {
         historyList.clear();
         historyList.add(History.getErrorHistory(message));
+        displayedHistoryList.clear();
+        displayedHistoryList.add(History.getErrorHistory(message));
         notifyDataSetChanged();
     }
 
     public void updateToProgress() {
         historyList.clear();
         historyList.add(History.getProgressHistory());
+        displayedHistoryList.clear();
+        displayedHistoryList.add(History.getProgressHistory());
         notifyDataSetChanged();
     }
 
-    public static ArrayList<History> sortWithStatus(ArrayList<History> list) {
+    public ArrayList<History> reverseList(ArrayList<History> list) {
+        ArrayList<History> result = new ArrayList<>();
+        for(int i = list.size() - 1; i >= 0; i--) {
+            result.add(list.get(i));
+        }
+        return result;
+    }
+
+    public ArrayList<History> sortWithStatus(ArrayList<History> list) {
         ArrayList<History> requestedList = new ArrayList<>();
         ArrayList<History> usingList = new ArrayList<>();
         ArrayList<History> delayedList = new ArrayList<>();
@@ -138,26 +180,30 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                     delayedList.add(history);
                     break;
                 case RETURNED:
-                    returnedList.add(history);
+                    if(!isReturnedHidden) {
+                        returnedList.add(history);
+                    }
                     break;
                 case EXPIRED:
-                    expiredList.add(history);
+                    if(!isExpiredHidden) {
+                        expiredList.add(history);
+                    }
                     break;
                 default:
                     break;
             }
         }
         ArrayList<History> result = new ArrayList<>();
-        result.addAll(requestedList);
-        result.addAll(usingList);
-        result.addAll(delayedList);
-        result.addAll(returnedList);
-        result.addAll(expiredList);
+        result.addAll(reverseList(requestedList));
+        result.addAll(reverseList(usingList));
+        result.addAll(reverseList(delayedList));
+        result.addAll(reverseList(returnedList));
+        result.addAll(reverseList(expiredList));
 
         return result;
     }
 
-    public static ArrayList<History> addHeaders(ArrayList<History> list) {
+    public ArrayList<History> addHeaders(ArrayList<History> list) {
         ArrayList<History> sortedList = sortWithStatus(list);
         ArrayList<History> listWithHeaders = new ArrayList<>();
         History firstOfList = new History();
@@ -193,9 +239,11 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView headerTitle;
+        CheckBox checkBox;
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             headerTitle = itemView.findViewById(R.id.listHeaderCell_textView);
+            checkBox = itemView.findViewById(R.id.listHeaderCell_hider);
         }
     }
 
@@ -330,24 +378,23 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private class HistoryReturnTask extends AsyncTask<History, Void, ExceptionAdder<Void>> {
+    private class HistoryReturnTask extends AsyncTask<History, Void, ExceptionAdder<ArrayList<History>>> {
 
         TextView view;
         int itemNum;
 
         @Override
-        protected ExceptionAdder<Void> doInBackground(History... histories) {
+        protected ExceptionAdder<ArrayList<History>> doInBackground(History... histories) {
             try {
-                HistoryRequest.returnItem(histories[0]);
+                return new ExceptionAdder<>(HistoryRequest.returnItem(histories[0]));
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
-            return new ExceptionAdder<>();
         }
 
         @Override
-        protected void onPostExecute(ExceptionAdder<Void> result) {
+        protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
             if(result.getException() != null) {
                 //TODO 알림 상자 이거 맞냐??
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -360,30 +407,28 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                 AlertDialog dialog = builder.create();
             }
             else {
-                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
-                historyReceiveTask.execute();
+                update(result.getBody());
             }
         }
     }
 
-    private class HistoryResponseTask extends AsyncTask<History, Void, ExceptionAdder<Void>> {
+    private class HistoryResponseTask extends AsyncTask<History, Void, ExceptionAdder<ArrayList<History>>> {
 
         TextView view;
         int itemNum;
 
         @Override
-        protected ExceptionAdder<Void> doInBackground(History... histories) {
+        protected ExceptionAdder<ArrayList<History>> doInBackground(History... histories) {
             try {
-                HistoryRequest.responseItem(histories[0]);
+                return new ExceptionAdder<>(HistoryRequest.responseItem(histories[0]));
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
-            return new ExceptionAdder<>();
         }
 
         @Override
-        protected void onPostExecute(ExceptionAdder<Void> result) {
+        protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
             if(result.getException() != null) {
                 Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -396,8 +441,7 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                 AlertDialog dialog = builder.create();
             }
             else {
-                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
-                historyReceiveTask.execute();
+                update(result.getBody());
             }
         }
     }

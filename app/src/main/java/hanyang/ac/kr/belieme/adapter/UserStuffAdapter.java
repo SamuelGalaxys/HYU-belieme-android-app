@@ -1,11 +1,13 @@
 package hanyang.ac.kr.belieme.adapter;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,14 +19,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONException;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.broadcastReceiver.AlarmReceiver;
@@ -92,22 +92,34 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
 
             switch (itemType.getStatus()) {
                 case USABLE:
-                    itemViewHolder.btn.setVisibility(View.VISIBLE);
+                    itemViewHolder.btn.setEnabled(true);
                     itemViewHolder.btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            HistoryPostTask historyPostTask = new HistoryPostTask();
-                            historyPostTask.execute(new History(
-                                    itemType.getId(),
-                                    0,
-                                    Globals.userInfo.getName(),
-                                    Integer.parseInt(Globals.userInfo.getStudentId()))
-                            );
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle(context.getString(R.string.rent_item_title))
+                                    .setMessage(context.getString(R.string.rent_item_message))
+                                    .setPositiveButton("대여요청하기", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            HistoryPostTask historyPostTask = new HistoryPostTask();
+                                            historyPostTask.execute(new History(
+                                                    itemType.getId(),
+                                                    0,
+                                                    Globals.userInfo.getName(),
+                                                    Integer.parseInt(Globals.userInfo.getStudentId()))
+                                            );
+                                        }
+                                    })
+                                    .setNegativeButton("취소", null)
+                                    .create()
+                                    .show();
+
                         }
                     });
                     break;
                 case UNUSABLE:
-                    itemViewHolder.btn.setVisibility(View.GONE);
+                    itemViewHolder.btn.setEnabled(false);
                     break;
                 default: {
                     break;
@@ -196,10 +208,10 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private class HistoryPostTask extends AsyncTask<History, Void, ExceptionAdder<History>> {
+    private class HistoryPostTask extends AsyncTask<History, Void, ExceptionAdder<Pair<History, ArrayList<ItemType>>>> {
 
         @Override
-        protected ExceptionAdder<History> doInBackground(History... items) {
+        protected ExceptionAdder<Pair<History, ArrayList<ItemType>>> doInBackground(History... items) {
             ExceptionAdder<History> result;
             try {
                 return new ExceptionAdder<>(HistoryRequest.addItem(items[0]));
@@ -209,14 +221,15 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
             }
         }
 
-        protected void onPostExecute(ExceptionAdder<History> result) {
+        @Override
+        protected void onPostExecute(ExceptionAdder<Pair<History, ArrayList<ItemType>>> result) {
             if (result.getBody() != null) {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(result.getBody().getExpiredDate());
+                calendar.setTime(result.getBody().first.getExpiredDate());
                 calendar.add(Calendar.SECOND, 1);
 
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-                alarmIntent.putExtra("historyId", result.getBody().getId());
+                alarmIntent.putExtra("historyId", result.getBody().first.getId());
                 alarmIntent.putExtra("type", "forExpired");
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis() / 1000, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
 
@@ -226,8 +239,7 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
                         calendar.getTimeInMillis(),
                         pendingIntent
                 );
-                ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
-                itemTypeReceiveTask.execute();
+                update(result.getBody().second);
             }
             else {
                 Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();

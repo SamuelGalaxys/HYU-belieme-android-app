@@ -26,6 +26,6 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/round_button_gray" />
+        app:srcCompat="@drawable/button_round_gray" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

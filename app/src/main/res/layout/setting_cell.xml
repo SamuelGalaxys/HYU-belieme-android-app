@@ -3,6 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:layout_marginTop="8dp"
     android:orientation="vertical">
 
     <LinearLayout
@@ -20,8 +22,7 @@
             android:gravity="center_vertical"
             android:text="개인정보"
             android:textColor="@color/colorBlack"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/imageView8"

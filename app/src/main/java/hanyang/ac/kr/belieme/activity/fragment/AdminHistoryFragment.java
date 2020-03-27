@@ -41,6 +41,8 @@ public class AdminHistoryFragment extends Fragment {
         layoutView = inflater.inflate(R.layout.fragment_history, container, false);
         context = (MainActivity)getActivity();
 
+        context.setChangeModeBtnVisibility(View.VISIBLE);
+
         onlyResume = false;
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);

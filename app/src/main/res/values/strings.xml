@@ -30,6 +30,10 @@
     <string name="set_admin_mode">관리자 모드로</string>
     <string name="set_user_mode">사용자 모드로</string>
 
+    <string name="rent_item_title">대여를 요청하시겠습니까</string>
+    <string name="rent_item_message">대여는 요청 후 학실에 방문하여 학생증, 주민등록증 등을 맡기고 하실 수 있습니다. 반납기한은 대여를 시작한 시간으로부터 7일 후 오후 6시까지 이며 주말이면 월요일로 연장됩니다. 또한 이 요청은 15분 뒤 자동으로 취소됩니다.</string>
+
+
     <!--    <string name="default_num">0</string>-->
 
 </resources>

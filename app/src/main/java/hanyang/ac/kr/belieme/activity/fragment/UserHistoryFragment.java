@@ -40,6 +40,8 @@ public class UserHistoryFragment extends Fragment {
         layoutView = inflater.inflate(R.layout.fragment_history, container, false);
         context = (MainActivity)getContext();
 
+        context.setChangeModeBtnVisibility(View.VISIBLE);
+
         onlyResume = false;
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);

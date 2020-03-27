@@ -5,13 +5,17 @@
     <item
         android:id="@+id/navigation_userStuffList"
         android:icon="@android:drawable/ic_menu_agenda"
-        android:title="물품" />
+        android:title="물품"
+        android:color="@color/colorHanyangWhite"
+        />
 
     <item android:id="@+id/navigation_history"
         android:icon="@android:drawable/ic_menu_recent_history"
-        android:title="기록" />
+        android:title="기록"
+        android:color="@color/colorHanyangWhite"/>
 
     <item android:id="@+id/navigation_setting"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="설정" />
+        android:title="설정"
+        android:color="@color/colorHanyangWhite"/>
 </menu>

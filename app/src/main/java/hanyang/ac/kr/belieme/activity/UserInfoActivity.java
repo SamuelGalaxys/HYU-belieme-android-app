@@ -30,10 +30,12 @@ public class UserInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.info_layout);
 
+        findViewById(R.id.info_button_roundButton).setVisibility(View.GONE);
+
         title = findViewById(R.id.info_textView_title);
         title.setText("개인정보");
 
-        logoutBtn = findViewById(R.id.info_btn);
+        logoutBtn = findViewById(R.id.info_button_bottomButton);
         logoutBtn.setText("로그아웃");
         logoutBtn.setOnClickListener(new View.OnClickListener() {
             @Override

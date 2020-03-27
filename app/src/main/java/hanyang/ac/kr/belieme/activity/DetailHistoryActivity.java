@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,16 +11,10 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 
-import hanyang.ac.kr.belieme.Exception.InternalServerException;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.adapter.InfoAdapter;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
@@ -42,9 +35,11 @@ public class DetailHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.info_layout);
 
+        findViewById(R.id.info_button_roundButton).setVisibility(View.GONE);
+
         title = findViewById(R.id.info_textView_title);
         recyclerView = findViewById(R.id.info_recyclerView);
-        btn = findViewById(R.id.info_btn);
+        btn = findViewById(R.id.info_button_bottomButton);
 
         btn.setVisibility(View.GONE);
 

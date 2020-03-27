@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -67,8 +68,8 @@ public class MainActivity extends AppCompatActivity {
         title = findViewById(R.id.main_textView_title);
 
         Globals.isAdminMode = false;
-        Globals.adminIds.add("2018008886");
-        if(Globals.adminIds.indexOf(Globals.userInfo.getStudentId()) != -1) {
+        Globals.adminInfo.add(new Pair<String, String>("2018008886", "이석환"));
+        if(Globals.isAdmin()) {
             changeModeBtn.setVisibility(View.VISIBLE);
         }
 
@@ -150,5 +151,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void setChangeModeBtnEnabled(boolean enabled) {
         changeModeBtn.setEnabled(enabled);
+    }
+
+    public void setChangeModeBtnVisibility(int visibility) {
+        changeModeBtn.setVisibility(visibility);
     }
 }

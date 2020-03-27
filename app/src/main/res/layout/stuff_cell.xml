@@ -58,13 +58,18 @@
 
     <Button
         android:id="@+id/stuffCell_btn_rent"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="56dp"
+        android:layout_height="40dp"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginRight="0dp"
-        android:layout_weight="1"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/gray_button_selector"
         android:text="@string/rent"
-        android:visibility="visible" />
+        android:textColor="@color/colorHanyangWhite"
+        android:textSize="12sp"
+        android:visibility="visible"
+        />
 
 </LinearLayout>

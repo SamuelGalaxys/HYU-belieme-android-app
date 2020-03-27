@@ -138,10 +138,12 @@ public class ItemType {
     public static ArrayList<ItemType> addHeaders(ArrayList<ItemType> list) {
         ArrayList<ItemType> sortedList = sortWithStatus(list);
         ArrayList<ItemType> listWithHeaders = new ArrayList<>();
-        ItemType firstOfList = new ItemType();
-        firstOfList.setStatus(ItemStatus.USABLE);//usable header
-        firstOfList.setViewType(ItemType.VIEW_TYPE_HEADER);
-        listWithHeaders.add(firstOfList);
+        if(sortedList.size() != 0 && sortedList.get(0).getStatus() == ItemStatus.USABLE) {
+            ItemType firstOfList = new ItemType();
+            firstOfList.setStatus(ItemStatus.USABLE);//usable header
+            firstOfList.setViewType(ItemType.VIEW_TYPE_HEADER);
+            listWithHeaders.add(firstOfList);
+        }
 
         boolean unusableHeaderAdded = false;
         for(int i = 0; i < sortedList.size(); i++) {
@@ -158,12 +160,12 @@ public class ItemType {
                 listWithHeaders.add(sortedList.get(i));
             }
         }
-        if(!unusableHeaderAdded) {
-            ItemType header = new ItemType();
-            header.setViewType(ItemType.VIEW_TYPE_HEADER);
-            header.setStatus(ItemStatus.UNUSABLE);//unusable header
-            listWithHeaders.add(header);
-        }
+//        if(!unusableHeaderAdded) {
+//            ItemType header = new ItemType();
+//            header.setViewType(ItemType.VIEW_TYPE_HEADER);
+//            header.setStatus(ItemStatus.UNUSABLE);//unusable header
+//            listWithHeaders.add(header);
+//        }
         return listWithHeaders;
     }
 }

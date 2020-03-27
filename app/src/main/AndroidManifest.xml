@@ -12,7 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.DetailHistoryActivity"></activity>
+        <activity android:name=".activity.AppInfoActivity"></activity>
+        <activity android:name=".activity.AdminManageActivity" />
+        <activity android:name=".activity.DetailHistoryActivity" />
         <activity android:name=".activity.DetailItemActivity" />
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.LoginActivity" />

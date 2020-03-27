@@ -41,6 +41,8 @@ public class AdminStuffListFragment extends Fragment {
 
         context = (MainActivity)getActivity();
 
+        context.setChangeModeBtnVisibility(View.VISIBLE);
+
         onlyResume = false;
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);

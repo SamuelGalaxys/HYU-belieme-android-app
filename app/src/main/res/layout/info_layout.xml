@@ -28,7 +28,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/info_btn"
+        app:layout_constraintBottom_toTopOf="@+id/info_button_bottomButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/info_textView_title">
@@ -36,14 +36,29 @@
     </androidx.recyclerview.widget.RecyclerView>
 
     <Button
-        android:id="@+id/info_btn"
+        style="@style/Widget.MaterialComponents.Button"
+        android:textAppearance="@style/AppTheme"
+        android:id="@+id/info_button_bottomButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:text="Button"
+        android:textSize="20sp"
+        android:textColor="@color/colorHanyangWhite"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/info_button_roundButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/info_recyclerView"
+        app:layout_constraintEnd_toEndOf="@+id/info_recyclerView"
+        app:srcCompat="@drawable/button_round_gray" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

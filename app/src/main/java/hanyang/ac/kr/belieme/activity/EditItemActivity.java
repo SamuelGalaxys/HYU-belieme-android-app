@@ -14,9 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 import hanyang.ac.kr.belieme.adapter.EditItemAdapter;
@@ -121,21 +118,20 @@ public class EditItemActivity extends AppCompatActivity {
         }
     }
 
-    public class ItemPostTask extends AsyncTask<Void, Void, ExceptionAdder<Void>> {
+    public class ItemPostTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<Item>>> {
 
         @Override
-        protected ExceptionAdder<Void> doInBackground(Void... voids) {
+        protected ExceptionAdder<ArrayList<Item>> doInBackground(Void... voids) {
             try {
-                ItemRequest.addItem(new Item(typeId));
+                return new ExceptionAdder<>(ItemRequest.addItem(new Item(typeId)));
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
-            return new ExceptionAdder<>();
         }
 
         @Override
-        protected void onPostExecute(ExceptionAdder<Void> result) {
+        protected void onPostExecute(ExceptionAdder<ArrayList<Item>> result) {
             if(result.getException() != null) {
                 //TODO 알림 상자 이거 맞냐??
                 AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
@@ -148,8 +144,7 @@ public class EditItemActivity extends AppCompatActivity {
                 AlertDialog dialog = builder.create();
             }
             else {
-                ItemGetTask itemGetTask = new ItemGetTask();
-                itemGetTask.execute(typeId);
+                adapter.update(result.getBody());
             }
         }
     }

@@ -1,5 +1,7 @@
 package hanyang.ac.kr.belieme.dataType;
 
+import android.util.Pair;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -197,7 +199,7 @@ public class HistoryRequest {
         }
     }
 
-    public static History addItem(History item) throws IOException, JSONException, HttpRequestException, ConnectionFailedException, InternalServerException {
+    public static Pair<History, ArrayList<ItemType>> addItem(History item) throws IOException, JSONException, HttpRequestException, ConnectionFailedException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
@@ -243,7 +245,6 @@ public class HistoryRequest {
                 connection.disconnect();
                 throw new HttpRequestException(HttpResult + " " + responseMessage);
             }
-
         }
         else {
             throw new ConnectionFailedException();
@@ -255,32 +256,48 @@ public class HistoryRequest {
         if(header.getInt("code") == InternalServerException.OK) {
             JSONObject body = outputJsonObject.getJSONObject("body");
 
-            History newItem = new History(
-                    body.getInt("id"),
-                    body.getInt("typeId"),
-                    body.getInt("itemNum"),
-                    body.getString("requesterName"),
-                    body.getInt("requesterId"),
-                    body.getString("responseManagerName"),
-                    body.getInt("responseManagerId"),
-                    body.getString("returnManagerName"),
-                    body.getInt("returnManagerId"),
-                    new Date(body.getLong("requestTimeStamp") * 1000L),
-                    new Date(body.getLong("responseTimeStamp") * 1000L),
-                    new Date(body.getLong("returnTimeStamp") * 1000L),
-                    new Date(body.getLong("cancelTimeStamp") * 1000L),
-                    HistoryStatus.stringToHistoryStatus(body.getString("status")),
-                    body.getString("typeName"),
-                    body.getString("typeEmoji")
+            JSONObject historyJsonObject = body.getJSONObject("history");
+
+            History historyResult = new History(
+                    historyJsonObject.getInt("id"),
+                    historyJsonObject.getInt("typeId"),
+                    historyJsonObject.getInt("itemNum"),
+                    historyJsonObject.getString("requesterName"),
+                    historyJsonObject.getInt("requesterId"),
+                    historyJsonObject.getString("responseManagerName"),
+                    historyJsonObject.getInt("responseManagerId"),
+                    historyJsonObject.getString("returnManagerName"),
+                    historyJsonObject.getInt("returnManagerId"),
+                    new Date(((long) historyJsonObject.getInt("requestTimeStamp")) * 1000L),
+                    new Date(((long) historyJsonObject.getInt("responseTimeStamp")) * 1000L),
+                    new Date(((long) historyJsonObject.getInt("returnTimeStamp")) * 1000L),
+                    new Date(((long) historyJsonObject.getInt("cancelTimeStamp")) * 1000L),
+                    HistoryStatus.stringToHistoryStatus(historyJsonObject.getString("status")),
+                    historyJsonObject.getString("typeName"),
+                    historyJsonObject.getString("typeEmoji")
             );
-            return newItem;
+
+            JSONArray itemTypeListJsonObject = body.getJSONArray("itemTypeList");
+            ArrayList<ItemType> itemTypeListResult = new ArrayList<>();
+
+            for (int i = 0; i < itemTypeListJsonObject.length(); i++) {
+                itemTypeListResult.add(new ItemType(
+                        itemTypeListJsonObject.getJSONObject(i).getInt("id"),
+                        itemTypeListJsonObject.getJSONObject(i).getString("name"),
+                        itemTypeListJsonObject.getJSONObject(i).getString("emoji"),
+                        itemTypeListJsonObject.getJSONObject(i).getInt("amount"),
+                        itemTypeListJsonObject.getJSONObject(i).getInt("count"),
+                        ItemStatus.stringToItemStatus(itemTypeListJsonObject.getJSONObject(i).getString("status")))
+                );
+            }
+            return new Pair<>(historyResult, itemTypeListResult);
         }
         else {
             throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 
-    public static void cancelItem(int id) throws IOException, JSONException, InternalServerException {
+    public static ArrayList<History> cancelItem(int id) throws IOException, JSONException, InternalServerException {
         String output = "";
 
         URL url = new URL(Constants.serverURL + "history/cancel/" + id);
@@ -320,12 +337,38 @@ public class HistoryRequest {
         JSONObject outputJsonObject = new JSONObject(output);
         JSONObject header = outputJsonObject.getJSONObject("header");
 
-        if(header.getInt("code") != InternalServerException.OK) {
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONArray body = outputJsonObject.getJSONArray("body");
+            ArrayList<History> items = new ArrayList<>();
+
+            for (int i = 0; i < body.length(); i++) {
+                items.add(new History(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("itemNum"),
+                        body.getJSONObject(i).getString("requesterName"),
+                        body.getJSONObject(i).getInt("requesterId"),
+                        body.getJSONObject(i).getString("responseManagerName"),
+                        body.getJSONObject(i).getInt("responseManagerId"),
+                        body.getJSONObject(i).getString("returnManagerName"),
+                        body.getJSONObject(i).getInt("returnManagerId"),
+                        new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000L),
+                        HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji")
+                ));
+            }
+            return items;
+        }
+        else {
             throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 
-    public static void returnItem(History history) throws IOException, JSONException, InternalServerException {
+    public static ArrayList<History> returnItem(History history) throws IOException, JSONException, InternalServerException {
         String output = "";
 
         JSONObject jsonObject = new JSONObject();
@@ -370,12 +413,37 @@ public class HistoryRequest {
         JSONObject outputJsonObject = new JSONObject(output);
         JSONObject header = outputJsonObject.getJSONObject("header");
 
-        if(header.getInt("code") != InternalServerException.OK) {
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONArray body = outputJsonObject.getJSONArray("body");
+            ArrayList<History> items = new ArrayList<>();
+
+            for (int i = 0; i < body.length(); i++) {
+                items.add(new History(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("itemNum"),
+                        body.getJSONObject(i).getString("requesterName"),
+                        body.getJSONObject(i).getInt("requesterId"),
+                        body.getJSONObject(i).getString("responseManagerName"),
+                        body.getJSONObject(i).getInt("responseManagerId"),
+                        body.getJSONObject(i).getString("returnManagerName"),
+                        body.getJSONObject(i).getInt("returnManagerId"),
+                        new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000L),
+                        HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji")
+                ));
+            }
+            return items;
+        } else {
             throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 
-    public static void responseItem(History history) throws IOException, JSONException, InternalServerException {
+    public static ArrayList<History> responseItem(History history) throws IOException, JSONException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
@@ -419,7 +487,32 @@ public class HistoryRequest {
         JSONObject outputJsonObject = new JSONObject(output);
         JSONObject header = outputJsonObject.getJSONObject("header");
 
-        if(header.getInt("code") != InternalServerException.OK) {
+        if(header.getInt("code") == InternalServerException.OK) {
+            JSONArray body = outputJsonObject.getJSONArray("body");
+            ArrayList<History> items = new ArrayList<>();
+
+            for (int i = 0; i < body.length(); i++) {
+                items.add(new History(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getInt("typeId"),
+                        body.getJSONObject(i).getInt("itemNum"),
+                        body.getJSONObject(i).getString("requesterName"),
+                        body.getJSONObject(i).getInt("requesterId"),
+                        body.getJSONObject(i).getString("responseManagerName"),
+                        body.getJSONObject(i).getInt("responseManagerId"),
+                        body.getJSONObject(i).getString("returnManagerName"),
+                        body.getJSONObject(i).getInt("returnManagerId"),
+                        new Date(body.getJSONObject(i).getLong("requestTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("responseTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("returnTimeStamp") * 1000L),
+                        new Date(body.getJSONObject(i).getLong("cancelTimeStamp") * 1000L),
+                        HistoryStatus.stringToHistoryStatus(body.getJSONObject(i).getString("status")),
+                        body.getJSONObject(i).getString("typeName"),
+                        body.getJSONObject(i).getString("typeEmoji")
+                ));
+            }
+            return items;
+        } else {
             throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
