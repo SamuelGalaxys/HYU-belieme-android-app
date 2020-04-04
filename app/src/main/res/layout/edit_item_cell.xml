@@ -7,48 +7,51 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="4dp"
         android:layout_marginBottom="4dp"
         android:background="@drawable/background_edit_item_cell"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/editItemCell_textView_itemNum"
-            android:layout_width="0dp"
+            android:layout_width="24dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="8dp"
             android:layout_marginTop="2dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="4dp"
             android:layout_marginBottom="2dp"
-            android:layout_weight="1"
+            android:layout_weight="0"
             android:gravity="start"
-            android:text="1"
-            android:textSize="24sp" />
+            android:text="11"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/editItemCell_textView_content"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginTop="2dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="4dp"
             android:layout_marginBottom="2dp"
             android:layout_weight="5"
             android:text="이석환님에게 대여 됨(연체)"
-            android:textSize="18sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/editItemCell_textView_date"
-            android:layout_width="0dp"
+            android:layout_width="56dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginTop="2dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="2dp"
-            android:layout_weight="2"
+            android:layout_weight="0"
             android:gravity="end"
             android:text="MM/DD"
-            android:textSize="18sp" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 

@@ -1,6 +1,7 @@
 package hanyang.ac.kr.belieme.adapter;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,12 +19,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.DetailHistoryActivity;
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
@@ -87,6 +91,7 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
             headerViewHolder.headerTitle.setText(displayedHistoryList.get(position).getStatus().toKoreanString());
             if(displayedHistoryList.get(position).getStatus() == HistoryStatus.RETURNED) {
                 headerViewHolder.checkBox.setVisibility(View.VISIBLE);
+//                headerViewHolder.checkBox.setChecked(!isReturnedHidden);
                 headerViewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -97,6 +102,7 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                 });
             } else if(displayedHistoryList.get(position).getStatus() == HistoryStatus.EXPIRED) {
                 headerViewHolder.checkBox.setVisibility(View.VISIBLE);
+//                headerViewHolder.checkBox.setChecked(!isExpiredHidden);
                 headerViewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -284,11 +290,21 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            history.setResponseManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
-                            history.setResponseManagerName(Globals.userInfo.getName());
-                            history.setStatus(HistoryStatus.USING);
-                            HistoryResponseTask historyResponseTask = new HistoryResponseTask();
-                            historyResponseTask.execute(history);
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("요청을 승인하겠습니까?")
+                                    .setPositiveButton("요청 승인하기", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            history.setResponseManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
+                                            history.setResponseManagerName(Globals.userInfo.getName());
+                                            history.setStatus(HistoryStatus.USING);
+                                            HistoryResponseTask historyResponseTask = new HistoryResponseTask();
+                                            historyResponseTask.execute(history);
+                                        }
+                                    })
+                                    .setNegativeButton("취소", null)
+                                    .create()
+                                    .show();
                         }
                     });
                     break;
@@ -300,11 +316,21 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            history.setReturnManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
-                            history.setReturnManagerName(Globals.userInfo.getName());
-                            history.setStatus(HistoryStatus.RETURNED);
-                            HistoryReturnTask historyReturnTask = new HistoryReturnTask();
-                            historyReturnTask.execute(history);
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("반납을 확인하셨습니까?")
+                                    .setPositiveButton("반납 승인하기", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            history.setReturnManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
+                                            history.setReturnManagerName(Globals.userInfo.getName());
+                                            history.setStatus(HistoryStatus.RETURNED);
+                                            HistoryReturnTask historyReturnTask = new HistoryReturnTask();
+                                            historyReturnTask.execute(history);
+                                        }
+                                    })
+                                    .setNegativeButton("취소", null)
+                                    .create()
+                                    .show();
                         }
                     });
                     break;
@@ -317,9 +343,21 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            history.setStatus(HistoryStatus.RETURNED);
-                            HistoryReturnTask historyReturnTask = new HistoryReturnTask();
-                            historyReturnTask.execute(history);
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("반납을 확인하셨습니까?")
+                                    .setPositiveButton("반납 승인하기", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            history.setReturnManagerId(Integer.parseInt(Globals.userInfo.getStudentId()));
+                                            history.setReturnManagerName(Globals.userInfo.getName());
+                                            history.setStatus(HistoryStatus.RETURNED);
+                                            HistoryReturnTask historyReturnTask = new HistoryReturnTask();
+                                            historyReturnTask.execute(history);
+                                        }
+                                    })
+                                    .setNegativeButton("취소", null)
+                                    .create()
+                                    .show();
                         }
                     });
                     break;
@@ -356,15 +394,21 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
     }
 
     private class HistoryReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<History>>> {
-
         @Override
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.getList());
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            ((MainActivity)context).setChangeModeBtnEnabled(false);
+            updateToProgress();
         }
 
         @Override
@@ -375,16 +419,19 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
             else {
                 updateToError(result.getException().getMessage());
             }
+            ((MainActivity)context).setChangeModeBtnEnabled(true);
         }
     }
 
     private class HistoryReturnTask extends AsyncTask<History, Void, ExceptionAdder<ArrayList<History>>> {
+        ProgressDialog progressDialog = new ProgressDialog(context);
 
         TextView view;
         int itemNum;
 
         @Override
         protected ExceptionAdder<ArrayList<History>> doInBackground(History... histories) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.returnItem(histories[0]));
             } catch (Exception e) {
@@ -394,31 +441,44 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            progressDialog.setMessage("처리 중입니다.");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
             if(result.getException() != null) {
-                //TODO 알림 상자 이거 맞냐??
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
-                        historyReceiveTask.execute();
-                    }
-                });
-                AlertDialog dialog = builder.create();
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle(result.getException().getMessage())
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                                historyReceiveTask.execute();
+                            }
+                        })
+                        .create()
+                        .show();
             }
             else {
                 update(result.getBody());
+                Toast.makeText(context, "반납되었습니다.", Toast.LENGTH_LONG).show();
             }
+            progressDialog.cancel();
         }
     }
 
     private class HistoryResponseTask extends AsyncTask<History, Void, ExceptionAdder<ArrayList<History>>> {
+        ProgressDialog progressDialog = new ProgressDialog(context);
 
         TextView view;
         int itemNum;
 
         @Override
         protected ExceptionAdder<ArrayList<History>> doInBackground(History... histories) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.responseItem(histories[0]));
             } catch (Exception e) {
@@ -428,21 +488,32 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            progressDialog.setMessage("처리 중입니다.");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
             if(result.getException() != null) {
-                Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
-                        historyReceiveTask.execute();
-                    }
-                });
-                AlertDialog dialog = builder.create();
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle(result.getException().getMessage())
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                                historyReceiveTask.execute();
+                            }
+                        })
+                        .create()
+                        .show();
             }
             else {
                 update(result.getBody());
+                Toast.makeText(context, "승인되었습니다.", Toast.LENGTH_LONG).show();
             }
+            progressDialog.cancel();
         }
     }
 }

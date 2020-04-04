@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,8 @@ import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.adapter.UserStuffAdapter;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
-import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 import hanyang.ac.kr.belieme.R;
+import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
 
 public class UserStuffListFragment extends Fragment {
     MainActivity context;
@@ -47,8 +46,8 @@ public class UserStuffListFragment extends Fragment {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
 
-        ItemTypeReceiveTask receiveTask = new ItemTypeReceiveTask();
-        receiveTask.execute();
+        ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
+        itemTypeReceiveTask.execute();
 
         ImageView addBtn = layoutView.findViewById(R.id.stuff_button_addBtn);
         addBtn.setVisibility(View.GONE);
@@ -68,7 +67,7 @@ public class UserStuffListFragment extends Fragment {
         }
     }
 
-    private class ItemTypeReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<ItemType>>> {
+    public class ItemTypeReceiveTask extends AsyncTask<Void, Void, ExceptionAdder<ArrayList<ItemType>>> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -87,6 +86,7 @@ public class UserStuffListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
+            super.onPostExecute(result);
             if (result.getException() == null) {
                 adapter.update(result.getBody());
             } else {

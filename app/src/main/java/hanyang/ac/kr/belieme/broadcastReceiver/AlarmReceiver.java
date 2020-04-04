@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
@@ -56,13 +57,14 @@ public class AlarmReceiver extends BroadcastReceiver {
                 String type = intent.getStringExtra("type");
                 History history = result.getBody();
                 if (type.equals("forDelayed")) {
-                    if (history.getRequesterId() == PreferenceManager.getInt(context, "gaeinNo") && history.getStatus() == HistoryStatus.DELAYED) {
-                        System.out.println("연체됨");
+                    if (history.getRequesterId() == Integer.parseInt(PreferenceManager.getString(context, "gaeinNo")) && history.getStatus() == HistoryStatus.DELAYED) {
                         NotificationHelper notificationHelper = new NotificationHelper(context);
                         NotificationCompat.Builder nb = notificationHelper.getChannelNotification(history.getNotificationTitle(), history.getNotificationMessage());
                         notificationHelper.getManager().notify((int) System.currentTimeMillis() / 1000, nb.build());
 
+                        TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
                         Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeZone(timeZone);
                         calendar.setTime(new Date(System.currentTimeMillis()));
                         calendar.add(Calendar.DATE, 1);
 
@@ -77,13 +79,14 @@ public class AlarmReceiver extends BroadcastReceiver {
                                 calendar.getTimeInMillis(),
                                 pendingIntent
                         );
-                    } else if (history.getRequesterId() == PreferenceManager.getInt(context, "gaeinNo") && history.getStatus() == HistoryStatus.USING) {
-                        System.out.println("사용중");
+                    } else if (history.getRequesterId() == Integer.parseInt(PreferenceManager.getString(context, "gaeinNo")) && history.getStatus() == HistoryStatus.USING) {
                         NotificationHelper notificationHelper = new NotificationHelper(context);
                         NotificationCompat.Builder nb = notificationHelper.getChannelNotification(history.getNotificationTitle(), history.getNotificationMessage());
                         notificationHelper.getManager().notify((int) System.currentTimeMillis() / 1000, nb.build());
 
+                        TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
                         Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeZone(timeZone);
                         calendar.setTime(history.getDueDate());
                         calendar.add(Calendar.SECOND, 1);
 
@@ -101,15 +104,18 @@ public class AlarmReceiver extends BroadcastReceiver {
                     }
                 } else if (type.equals("forExpired")) {
                     if (history.getRequesterId() == Integer.parseInt(PreferenceManager.getString(context, "gaeinNo")) && history.getStatus() == HistoryStatus.EXPIRED) {
-                        System.out.println("취소됨");
                         NotificationHelper notificationHelper = new NotificationHelper(context);
                         NotificationCompat.Builder nb = notificationHelper.getChannelNotification(history.getNotificationTitle(), history.getNotificationMessage());
                         notificationHelper.getManager().notify((int) System.currentTimeMillis() / 1000, nb.build());
                     } else if (history.getRequesterId() == Integer.parseInt(PreferenceManager.getString(context, "gaeinNo")) && history.getStatus() == HistoryStatus.USING) {
                         // 반납 기한 아침에 보내기
+                        TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
                         Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeZone(timeZone);
                         calendar.setTime(history.getDueDate());
-                        calendar.set(Calendar.HOUR_OF_DAY, 5);
+                        calendar.set(Calendar.HOUR_OF_DAY, 7);
+                        calendar.set(Calendar.MINUTE, 0);
+                        calendar.set(Calendar.SECOND, 0);
 
                         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
                         alarmIntent.putExtra("historyId", history.getId());
@@ -124,9 +130,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                         );
                     }
                 }
-            }
-            else {
-                Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }

@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -13,6 +14,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -28,6 +31,8 @@ public class EditItemActivity extends AppCompatActivity {
     private EditItemAdapter adapter;
     private int typeId;
 
+    private EditItemActivity context;
+
     private TextView nameView;
     private TextView emojiView;
     private TextView saveBtn;
@@ -39,6 +44,8 @@ public class EditItemActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
+
+        context = this;
 
         nameView = findViewById(R.id.editItem_editText_name);
         emojiView = findViewById(R.id.editItem_editText_emoji);
@@ -63,22 +70,42 @@ public class EditItemActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() { //TODO 좀 더 추가버튼을 신중히 누를 수 있게 바꾸기
             @Override
             public void onClick(View v) {
-                ItemPostTask itemPostTask = new ItemPostTask();
-                itemPostTask.execute();
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle("물품을 하나 더 추가하시겠습니까?")
+                        .setPositiveButton("추가하기", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ItemPostTask itemPostTask = new ItemPostTask();
+                                itemPostTask.execute();
+                            }
+                        })
+                        .setNegativeButton("취소", null)
+                        .create()
+                        .show();
             }
         });
 
         saveBtn.setOnClickListener(new View.OnClickListener() { //Item Type name, emoji 바꿀 때만 사용 됨
             @Override
             public void onClick(View v) {
-                ItemType itemType = new ItemType(
-                        typeId,
-                        nameView.getText().toString(),
-                        emojiView.getText().toString(),
-                        0,
-                        0);
-                ItemTypeEditTask editTask = new ItemTypeEditTask();
-                editTask.execute(itemType);
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle("물품정보를 변경하시겠습니까?")
+                        .setPositiveButton("변경하기", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ItemType itemType = new ItemType(
+                                        typeId,
+                                        nameView.getText().toString(),
+                                        emojiView.getText().toString(),
+                                        0,
+                                        0);
+                                ItemTypeEditTask editTask = new ItemTypeEditTask();
+                                editTask.execute(itemType);
+                            }
+                        })
+                        .setNegativeButton("취소", null)
+                        .create()
+                        .show();
             }
         });
     }
@@ -104,17 +131,21 @@ public class EditItemActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            saveBtn.setEnabled(false);
+            addBtn.setEnabled(false);
+            adapter.updateToProgress();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<Item>> result) {
             if (result.getBody() != null) {
                 adapter.update(result.getBody());
             } else {
                 adapter.updateToError(result.getException().getMessage());
             }
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            adapter.updateToProgress();
+            saveBtn.setEnabled(true);
+            addBtn.setEnabled(true);
         }
     }
 
@@ -122,6 +153,7 @@ public class EditItemActivity extends AppCompatActivity {
 
         @Override
         protected ExceptionAdder<ArrayList<Item>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemRequest.addItem(new Item(typeId)));
             } catch (Exception e) {
@@ -131,21 +163,33 @@ public class EditItemActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            saveBtn.setEnabled(false);
+            addBtn.setEnabled(false);
+            adapter.updateToProgress();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<Item>> result) {
             if(result.getException() != null) {
-                //TODO 알림 상자 이거 맞냐??
-                AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
-                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        ItemGetTask itemGetTask = new ItemGetTask();
-                        itemGetTask.execute(typeId);
-                    }
-                });
-                AlertDialog dialog = builder.create();
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle(result.getException().getMessage())
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ItemGetTask itemGetTask = new ItemGetTask();
+                                itemGetTask.execute(typeId);
+                            }
+                        })
+                        .create()
+                        .show();
             }
             else {
                 adapter.update(result.getBody());
+                Toast.makeText(context, "물품이 하나 늘었습니다.", Toast.LENGTH_LONG).show();
             }
+            saveBtn.setEnabled(true);
+            addBtn.setEnabled(true);
         }
     }
 
@@ -153,6 +197,7 @@ public class EditItemActivity extends AppCompatActivity {
 
         @Override
         protected ExceptionAdder<Void> doInBackground(ItemType... itemTypes) {
+            publishProgress();
             try {
                 ItemTypeRequest.editItem(itemTypes[0]);
             } catch (Exception e) {
@@ -163,12 +208,20 @@ public class EditItemActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            saveBtn.setEnabled(false);
+            addBtn.setEnabled(false);
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<Void> result) {
             if(result.getException() == null) {
-                Toast.makeText(getApplicationContext(), "물품의 정보가 변경되었습니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "물품의 정보가 변경되었습니다.", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(getApplicationContext(), result.getException().getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
             }
+            saveBtn.setEnabled(true);
+            addBtn.setEnabled(true);
         }
     }
 }

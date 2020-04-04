@@ -1,8 +1,10 @@
 package hanyang.ac.kr.belieme.dataType;
 
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class History {
     public static final int VIEW_TYPE_HEADER = 0;
@@ -208,23 +210,19 @@ public class History {
         this.errorMessage = errorMessage;
     }
 
-    //TODO 생각 좀 해보기
     public Date getExpiredDate() {
         Calendar tmp = Calendar.getInstance();
-        tmp.setTime(requestTimeStamp);
-        tmp.add(Calendar.MINUTE, 15);
+        tmp.setTimeInMillis(requestTimeStamp.getTime() + 1000 * 60 * 15);
         return tmp.getTime();
     }
 
     public Date getDueDate() {
-//        Calendar tmp = Calendar.getInstance();
-//        tmp.setTime(responseTimeStamp);
-//        tmp.add(Calendar.SECOND, 30);
-//        return tmp.getTime();
         Calendar tmp = Calendar.getInstance();
         tmp.setTime(responseTimeStamp);
+        TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+        tmp.setTimeZone(timeZone);
         tmp.add(Calendar.DATE, 7);
-        if(tmp.get(Calendar.HOUR_OF_DAY) > 17 ) {
+        if(tmp.get(Calendar.HOUR_OF_DAY) > 18 ) {
             tmp.add(Calendar.DATE, 1);
         }
         tmp.set(Calendar.HOUR_OF_DAY, 17);
@@ -260,21 +258,25 @@ public class History {
         String result = "";
         if(status == HistoryStatus.USING) {
             SimpleDateFormat formatter = new SimpleDateFormat("MM월 DD일");
+            TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+            formatter.setTimeZone(timeZone);
             result = formatter.format(getDueDate()) + " 오후 6시까지 반납해주세요.";
-            result = "내일 오후 6시까지 반납해주세요.";
+            result = "오늘 오후 6시까지 반납해주세요.";
 
         }
         else if(status == HistoryStatus.DELAYED) {
             result =  "빠른 시일 내에 반납해주세요.";
         }
         else if(status == HistoryStatus.EXPIRED) {
-            result = "뭘 써야 한담";
+            result = "대여 의사가 있다면 다시 요청 해 주세요.";
         }
         return result;
     }
 
     public String dateToString() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+        TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+        formatter.setTimeZone(timeZone);
         switch (status) {
             case DELAYED :
             case USING :

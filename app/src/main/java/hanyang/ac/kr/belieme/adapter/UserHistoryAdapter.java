@@ -1,6 +1,7 @@
 package hanyang.ac.kr.belieme.adapter;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,12 +19,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.DetailHistoryActivity;
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
 import hanyang.ac.kr.belieme.dataType.HistoryRequest;
@@ -124,9 +128,19 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     itemViewHolder.btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            history.setStatus(HistoryStatus.EXPIRED);
-                            HistoryCancelTask historyCancelTask = new HistoryCancelTask();
-                            historyCancelTask.execute(history.getId());
+                            new MaterialAlertDialogBuilder(context)
+                                    .setTitle("요청을 취소하겠습니까?")
+                                    .setPositiveButton("요청 취소하기", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            history.setStatus(HistoryStatus.EXPIRED);
+                                            HistoryCancelTask historyCancelTask = new HistoryCancelTask();
+                                            historyCancelTask.execute(history.getId());
+                                        }
+                                    })
+                                    .setNegativeButton("취소", null)
+                                    .create()
+                                    .show();
                         }
                     });
                     break;
@@ -325,6 +339,7 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         @Override
         protected ExceptionAdder<ArrayList<History>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.getListByRequesterId(Integer.parseInt(Globals.userInfo.getStudentId())));
             } catch (Exception e) {
@@ -334,22 +349,27 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            ((MainActivity)context).setChangeModeBtnEnabled(false);
+            updateToProgress();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
             if (result.getBody() != null) {
                 update(result.getBody());
             } else {
                 updateToError(result.getException().getMessage());
             }
+            ((MainActivity)context).setChangeModeBtnEnabled(true);
         }
     }
 
     private class HistoryCancelTask extends AsyncTask<Integer, Void, ExceptionAdder<ArrayList<History>>> {
-
-        TextView view;
-        int itemNum;
-
+        ProgressDialog progressDialog = new ProgressDialog(context);
         @Override
         protected ExceptionAdder<ArrayList<History>> doInBackground(Integer... integers) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(HistoryRequest.cancelItem(integers[0]));
             } catch (Exception e) {
@@ -359,21 +379,32 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            progressDialog.setMessage("처리 중입니다.");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<History>> result) {
-            if(result.getException() != null) { //TODO 여기 뭐지??
-                Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
-                        historyReceiveTask.execute();
-                    }
-                });
-                AlertDialog dialog = builder.create();
+            if(result.getException() != null) {
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle(result.getException().getMessage())
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                HistoryReceiveTask historyReceiveTask = new HistoryReceiveTask();
+                                historyReceiveTask.execute();
+                            }
+                        })
+                        .create()
+                        .show();
             }
             else {
                 update(result.getBody());
+                Toast.makeText(context, "취소되었습니다.", Toast.LENGTH_LONG).show();
             }
+            progressDialog.cancel();
         }
     }
 }

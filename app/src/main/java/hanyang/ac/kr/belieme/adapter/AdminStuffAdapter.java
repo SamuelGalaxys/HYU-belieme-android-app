@@ -1,6 +1,8 @@
 package hanyang.ac.kr.belieme.adapter;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -18,11 +20,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.EditItemActivity;
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
@@ -163,8 +168,18 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.item_menu_delete:
-                        ItemTypeDeleteTask itemTypeDeleteTask = new ItemTypeDeleteTask();
-                        itemTypeDeleteTask.execute(Integer.valueOf(id.getText().toString()));
+                        new MaterialAlertDialogBuilder(context)
+                                .setTitle("이 물품을 정말로 삭제하시겠습니까?")
+                                .setPositiveButton("삭제하기", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        ItemTypeDeleteTask itemTypeDeleteTask = new ItemTypeDeleteTask();
+                                        itemTypeDeleteTask.execute(Integer.valueOf(id.getText().toString()));
+                                    }
+                                })
+                                .setNegativeButton("취소", null)
+                                .create()
+                                .show();
                         return true;
                     case R.id.item_menu_edit:
                         Intent intent = new Intent(context, EditItemActivity.class);
@@ -202,11 +217,18 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
 
         @Override
         protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemTypeRequest.getList());
             } catch (Exception e) {
                 return new ExceptionAdder<>(e);
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            ((MainActivity)context).setChangeModeBtnEnabled(false);
+            updateToProgress();
         }
 
         @Override
@@ -216,13 +238,16 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
             } else {
                 updateToError(result.getException().getMessage());
             }
+            ((MainActivity)context).setChangeModeBtnEnabled(true);
         }
     }
 
     private class ItemTypeDeleteTask extends AsyncTask<Integer, Void, ExceptionAdder<Void>> {
+        ProgressDialog progressDialog = new ProgressDialog(context);
 
         @Override
         protected ExceptionAdder<Void> doInBackground(Integer... integers) {
+            publishProgress();
             try {
                 ItemTypeRequest.deactivateItem(integers[0]);
             } catch (Exception e) {
@@ -233,14 +258,22 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            progressDialog.setMessage("진행 중입니다.");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<Void> result) {
             if(result.getException() == null) {
-                Toast.makeText(context, "물품이 비활성화 되었습니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "물품이 삭제되었습니다.", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
             }
             ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
             itemTypeReceiveTask.execute();
+            progressDialog.cancel();
         }
     }
 }

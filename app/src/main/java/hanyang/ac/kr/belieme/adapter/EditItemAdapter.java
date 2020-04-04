@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.DetailItemActivity;
@@ -134,7 +135,9 @@ public class EditItemAdapter extends RecyclerView.Adapter {
 
             String contentString = "";
             History lastHistory = item.getLastHistory();
-            SimpleDateFormat formatter = new SimpleDateFormat("MM월 dd일");
+            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd");
+            TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+            formatter.setTimeZone(timeZone);
             if (item.getStatus() != ItemStatus.INACTIVE) {
                 if (lastHistory != null) {
                     switch (lastHistory.getStatus()) {
@@ -144,10 +147,11 @@ public class EditItemAdapter extends RecyclerView.Adapter {
                             break;
                         case DELAYED:
                             date.setText(formatter.format(lastHistory.getResponseTimeStamp()));
-                            contentString = lastHistory.getRequesterName() + "님이 대여 중 입니다(연체됨).";
+                            contentString = lastHistory.getRequesterName() + "님이 대여 중 입니다(연체).";
                             break;
                         case REQUESTED:
-                            formatter = new SimpleDateFormat("HH시 mm분");
+                            formatter = new SimpleDateFormat("HH:mm");
+                            formatter.setTimeZone(timeZone);
                             date.setText(formatter.format(lastHistory.getRequestTimeStamp()));
                             contentString = lastHistory.getRequesterName() + "님이 대여 요청하셨습니다.";
                             break;

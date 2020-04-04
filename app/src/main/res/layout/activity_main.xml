@@ -49,10 +49,10 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:text="@string/set_admin_mode"
-        android:visibility="visible"
         android:textColor="@color/colorHanyangWhite"
         android:textSize="12sp"
         android:textStyle="bold"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/main_frame"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

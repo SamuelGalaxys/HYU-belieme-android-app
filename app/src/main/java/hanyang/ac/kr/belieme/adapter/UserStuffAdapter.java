@@ -3,6 +3,7 @@ package hanyang.ac.kr.belieme.adapter;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
+import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.broadcastReceiver.AlarmReceiver;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.History;
@@ -99,7 +101,7 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
                             new MaterialAlertDialogBuilder(context)
                                     .setTitle(context.getString(R.string.rent_item_title))
                                     .setMessage(context.getString(R.string.rent_item_message))
-                                    .setPositiveButton("대여요청하기", new DialogInterface.OnClickListener() {
+                                    .setPositiveButton("대여 요청하기", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             HistoryPostTask historyPostTask = new HistoryPostTask();
@@ -209,9 +211,10 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
     }
 
     private class HistoryPostTask extends AsyncTask<History, Void, ExceptionAdder<Pair<History, ArrayList<ItemType>>>> {
-
+        ProgressDialog progressDialog = new ProgressDialog(context);
         @Override
         protected ExceptionAdder<Pair<History, ArrayList<ItemType>>> doInBackground(History... items) {
+            publishProgress();
             ExceptionAdder<History> result;
             try {
                 return new ExceptionAdder<>(HistoryRequest.addItem(items[0]));
@@ -219,6 +222,13 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
                 e.printStackTrace();
                 return new ExceptionAdder<>(e);
             }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            progressDialog.setCancelable(false);
+            progressDialog.setMessage("진행 중입니다.");
+            progressDialog.show();
         }
 
         @Override
@@ -240,12 +250,14 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
                         pendingIntent
                 );
                 update(result.getBody().second);
+                Toast.makeText(context, "대여 요청이 되었습니다.", Toast.LENGTH_LONG).show();
             }
             else {
                 Toast.makeText(context, result.getException().getMessage(), Toast.LENGTH_LONG).show();
                 ItemTypeReceiveTask itemTypeReceiveTask = new ItemTypeReceiveTask();
                 itemTypeReceiveTask.execute();
             }
+            progressDialog.cancel();
         }
     }
 
@@ -253,6 +265,7 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
 
         @Override
         protected ExceptionAdder<ArrayList<ItemType>> doInBackground(Void... voids) {
+            publishProgress();
             try {
                 return new ExceptionAdder<>(ItemTypeRequest.getList());
             } catch (Exception e) {
@@ -262,12 +275,19 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            ((MainActivity)context).setChangeModeBtnEnabled(false);
+            updateToProgress();
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<ArrayList<ItemType>> result) {
             if (result.getException() == null) {
                 update(result.getBody());
             } else {
                 updateToError(result.getException().getMessage());
             }
+            ((MainActivity)context).setChangeModeBtnEnabled(true);
         }
     }
 }

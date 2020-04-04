@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.adapter.InfoAdapter;
@@ -71,11 +72,20 @@ public class DetailHistoryActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            ArrayList<Pair<String, String>> list = new ArrayList<>();
+            list.add(new Pair<String, String>("__PROGRESS__", ""));
+            adapter.update(list);
+        }
+
+        @Override
         protected void onPostExecute(ExceptionAdder<History> result) {
             if(result.getException() == null) {
                 History history = result.getBody();
                 ArrayList<Pair<String, String>> list = new ArrayList<>();
                 SimpleDateFormat formatter = new SimpleDateFormat("YYYY년 MM월 dd일 HH시 mm분");
+                TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+                formatter.setTimeZone(timeZone);
                 switch (history.getStatus()) {
                     case REQUESTED:
                         list.add(new Pair<>("물품 이름", history.getTypeName()));
@@ -134,13 +144,6 @@ public class DetailHistoryActivity extends AppCompatActivity {
                 error.add(new Pair("__ERROR__", result.getException().getMessage()));
                 adapter.update(error);
             }
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            ArrayList<Pair<String, String>> list = new ArrayList<>();
-            list.add(new Pair<String, String>("__PROGRESS__", ""));
-            adapter.update(list);
         }
     }
 }

@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         Globals.isAdminMode = false;
         Globals.adminInfo.add(new Pair<String, String>("2018008886", "이석환"));
+        Globals.adminInfo.add(new Pair<String, String>("2018007929", "김동규"));
+        Globals.adminInfo.add(new Pair<String, String>("2019088722", "박지원"));
         if(Globals.isAdmin()) {
             changeModeBtn.setVisibility(View.VISIBLE);
         }
@@ -150,10 +152,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setChangeModeBtnEnabled(boolean enabled) {
-        changeModeBtn.setEnabled(enabled);
+        if(Globals.isAdmin()) {
+            changeModeBtn.setEnabled(enabled);
+        }
     }
 
     public void setChangeModeBtnVisibility(int visibility) {
-        changeModeBtn.setVisibility(visibility);
+        if(Globals.isAdmin()) {
+            Log.d("Admin", "true");
+            changeModeBtn.setVisibility(visibility);
+        }
     }
 }
