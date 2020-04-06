@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import hanyang.ac.kr.belieme.activity.fragment.AdminHistoryFragment;
 import hanyang.ac.kr.belieme.activity.fragment.AdminStuffListFragment;
@@ -60,6 +61,18 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
             return;
+        } else if(getIntent().getBooleanExtra("afterLogin", false)) {
+            if(Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("인편쓰거라 이 녀석들아")
+                        .setMessage("이름 : 이석환\n" +
+                                "생년월일 : 1999.11.26.\n" +
+                                "입대일자 : 2020.04.07.\n" +
+                                "입영부대 : 31사단")
+                        .setPositiveButton("확인", null)
+                        .create()
+                        .show();
+            }
         }
 
         changeModeBtn = findViewById(R.id.main_btn_changeMode);

@@ -7,8 +7,8 @@ android {
         applicationId "hanyang.ac.kr.belieme"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 3
-        versionName "3 alpha"
+        versionCode 4
+        versionName "4 military edition"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

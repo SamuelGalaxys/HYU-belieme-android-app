@@ -51,6 +51,7 @@ public class StartActivity extends AppCompatActivity {
 
         if(getIntent().getBooleanExtra("exit", false)) {
             Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("afterLogin", true);
             startActivity(intent);
             finish();
             return;
