@@ -4,10 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -19,34 +22,31 @@ import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.adapter.InfoAdapter;
 
 public class AppInfoActivity extends AppCompatActivity {
-    private TextView title;
-    private RecyclerView recyclerView;
-
-    private InfoAdapter adapter;
+    LinearLayout androidGithub;
+    LinearLayout iosGithub;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.info_layout);
+        setContentView(R.layout.activity_app_info);
 
-        findViewById(R.id.info_button_bottomButton).setVisibility(View.GONE);
-        findViewById(R.id.info_button_roundButton).setVisibility(View.GONE);
+        androidGithub = findViewById(R.id.appInfo_layout_androidGithub);
+        iosGithub = findViewById(R.id.appInfo_layout_iosGithub);
 
-        title = findViewById(R.id.info_textView_title);
-        title.setText("어플 정보");
+        androidGithub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ESeokhwan"));
+                startActivity(intent);
+            }
+        });
 
-        recyclerView = findViewById(R.id.info_recyclerView);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        adapter = new InfoAdapter(this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(layoutManager);
-
-        ArrayList<Pair<String, String>> infoList = new ArrayList<>();
-
-        infoList.add(new Pair<String, String>("version", String.valueOf(Constants.currentVersion)));
-
-        adapter.update(infoList);
-
+        iosGithub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/stleamist"));
+                startActivity(intent);
+            }
+        });
     }
 }

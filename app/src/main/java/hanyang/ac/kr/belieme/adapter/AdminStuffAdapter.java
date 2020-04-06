@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,9 +24,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+import hanyang.ac.kr.belieme.activity.DetailItemTypeActivity;
 import hanyang.ac.kr.belieme.R;
-import hanyang.ac.kr.belieme.activity.EditItemActivity;
 import hanyang.ac.kr.belieme.activity.MainActivity;
+import hanyang.ac.kr.belieme.activity.dialog.EditItemTypeDialog;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
 import hanyang.ac.kr.belieme.dataType.ItemTypeRequest;
@@ -152,7 +152,21 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
             count = itemView.findViewById(R.id.stuffCell_textView_count);
             btn = itemView.findViewById(R.id.stuffCell_btn_rent);
 
-            itemView.setOnCreateContextMenuListener(this);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, DetailItemTypeActivity.class);
+
+                    intent.putExtra("typeId", Integer.parseInt(id.getText().toString()));
+                    intent.putExtra("name", name.getText().toString());
+                    intent.putExtra("countAndAmount", count.getText().toString());
+                    intent.putExtra("emoji", emoji.getText().toString());
+                    intent.putExtra("isAdminMode", true);
+                    context.startActivity(intent);
+                }
+            });
+
+           itemView.setOnCreateContextMenuListener(this);
         }
 
         @Override
@@ -182,13 +196,15 @@ public class AdminStuffAdapter extends RecyclerView.Adapter {
                                 .show();
                         return true;
                     case R.id.item_menu_edit:
-                        Intent intent = new Intent(context, EditItemActivity.class);
-
-                        intent.putExtra("typeId", Integer.parseInt(id.getText().toString()));
-                        intent.putExtra("name", name.getText().toString());
-                        intent.putExtra("countAndAmount", count.getText().toString());
-                        intent.putExtra("emoji", emoji.getText().toString());
-                        context.startActivity(intent);
+                        EditItemTypeDialog dialog = new EditItemTypeDialog(context, AdminStuffAdapter.this, Integer.parseInt(id.getText().toString()), name.getText().toString(), emoji.getText().toString());
+                        dialog.showAddItemDialog();
+//                        Intent intent = new Intent(context, EditItemActivity.class);
+//
+//                        intent.putExtra("typeId", Integer.parseInt(id.getText().toString()));
+//                        intent.putExtra("name", name.getText().toString());
+//                        intent.putExtra("countAndAmount", count.getText().toString());
+//                        intent.putExtra("emoji", emoji.getText().toString());
+//                        context.startActivity(intent);
                         return true;
                     default:
                         return false;

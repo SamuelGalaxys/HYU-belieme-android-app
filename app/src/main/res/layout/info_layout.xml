@@ -59,6 +59,7 @@
         android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/info_recyclerView"
         app:layout_constraintEnd_toEndOf="@+id/info_recyclerView"
-        app:srcCompat="@drawable/button_round_gray" />
+        app:srcCompat="@drawable/button_round_gray"
+        android:visibility="invisible"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

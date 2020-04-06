@@ -12,16 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.AppInfoActivity"></activity>
-        <activity android:name=".activity.AdminManageActivity" />
+        <activity android:name=".activity.DetailItemTypeActivity"></activity>
+        <activity android:name=".activity.AppInfoActivity" />
+        <activity
+            android:name=".activity.AdminManageActivity"
+            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activity.DetailHistoryActivity" />
         <activity android:name=".activity.DetailItemActivity" />
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.LoginActivity" />
-        <activity android:name=".activity.AddItemActivity" />
-        <activity
-            android:name=".activity.EditItemActivity"
-            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activity.StartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,8 +28,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.MainActivity" />
-
+        <activity android:name=".activity.MainActivity"
+            android:windowSoftInputMode="adjustNothing"/>
         <receiver android:name=".broadcastReceiver.AlarmReceiver">
             <intent-filter>
                 <action android:name="alarm" />

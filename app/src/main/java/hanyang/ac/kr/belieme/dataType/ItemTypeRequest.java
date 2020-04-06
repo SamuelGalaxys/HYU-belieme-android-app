@@ -72,7 +72,7 @@ public class ItemTypeRequest {
         }
     }
 
-    public static ItemType addItem(ItemType itemType) throws IOException, JSONException, InternalServerException {
+    public static ArrayList<ItemType> addItem(ItemType itemType) throws IOException, JSONException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
@@ -120,23 +120,26 @@ public class ItemTypeRequest {
         JSONObject header = outputJsonObject.getJSONObject("header");
 
         if(header.getInt("code") == InternalServerException.OK) {
-            JSONObject body = outputJsonObject.getJSONObject("body");
-
-            return new ItemType(
-                    body.getInt("id"),
-                    body.getString("name"),
-                    body.getString("emoji"),
-                    body.getInt("amount"),
-                    body.getInt("count"),
-                    ItemStatus.stringToItemStatus(body.getString("status"))
-            );
+            JSONArray body = outputJsonObject.getJSONArray("body");
+            ArrayList<ItemType> result = new ArrayList<>();
+            for(int i = 0; i < body.length(); i++) {
+                result.add(new ItemType(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getString("name"),
+                        body.getJSONObject(i).getString("emoji"),
+                        body.getJSONObject(i).getInt("amount"),
+                        body.getJSONObject(i).getInt("count"),
+                        ItemStatus.stringToItemStatus(body.getJSONObject(i).getString("status"))
+                ));
+            }
+            return result;
         }
         else {
             throw new InternalServerException(header.getInt("code"), header.getString("message"));
         }
     }
 
-    public static void editItem(ItemType itemType) throws IOException, JSONException, InternalServerException {
+    public static ArrayList<ItemType> editItem(ItemType itemType) throws IOException, JSONException, InternalServerException {
         String output = "";
         JSONObject jsonObject = new JSONObject();
 
@@ -183,6 +186,20 @@ public class ItemTypeRequest {
 
         if(header.getInt("code") != InternalServerException.OK) {
             throw new InternalServerException(header.getInt("code"), header.getString("message"));
+        } else {
+            JSONArray body = outputJsonObject.getJSONArray("body");
+            ArrayList<ItemType> result = new ArrayList<>();
+            for(int i = 0; i < body.length(); i++) {
+                result.add(new ItemType(
+                        body.getJSONObject(i).getInt("id"),
+                        body.getJSONObject(i).getString("name"),
+                        body.getJSONObject(i).getString("emoji"),
+                        body.getJSONObject(i).getInt("amount"),
+                        body.getJSONObject(i).getInt("count"),
+                        ItemStatus.stringToItemStatus(body.getJSONObject(i).getString("status"))
+                ));
+            }
+            return result;
         }
     }
 

@@ -109,7 +109,7 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         } else if(holder instanceof ItemViewHolder) {
             ItemViewHolder itemViewHolder = ((ItemViewHolder)holder);
             final History history = displayedHistoryList.get(position);
-            itemViewHolder.itemName.setText(history.getTypeName() + " " + history.getItemNum());
+            itemViewHolder.itemName.setText(history.getTypeName() + " #" + history.getItemNum());
             itemViewHolder.timeStamps.setText(history.dateToString());
             itemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -160,7 +160,7 @@ public class UserHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 case EXPIRED: {
                     itemViewHolder.itemName.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
                     itemViewHolder.timeStamps.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
-                    itemViewHolder.btn.setVisibility(View.INVISIBLE);
+                    itemViewHolder.btn.setVisibility(View.GONE);
                     break;
                 }
                 default: {

@@ -14,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import hanyang.ac.kr.belieme.Constants;
+import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.manager.PreferenceManager;
 
 public class UserInfoRequest {
@@ -59,7 +60,8 @@ public class UserInfoRequest {
                 outputJason.getString("userGb"),
                 outputJason.getString("daehakNm"),
                 outputJason.getString("sosokNm"),
-                outputJason.getString("userGbNm")
+                outputJason.getString("userGbNm"),
+                Globals.getPermission(Integer.parseInt(outputJason.getString("gaeinNo")))
         );
 
         PreferenceManager.setString(context, "gaeinNo", outputJason.getString("gaeinNo"));

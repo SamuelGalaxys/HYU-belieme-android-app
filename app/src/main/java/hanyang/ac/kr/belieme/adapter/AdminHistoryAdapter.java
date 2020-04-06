@@ -278,8 +278,8 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
         }
 
         public void bind(final History history) {
-            itemName.setText(history.getTypeName() + " " + history.getItemNum());
-            timeStamps.setText(history.dateToString());
+            itemName.setText(history.getTypeName() + " #" + history.getItemNum());
+            timeStamps.setText(history.dateToString() + " (" + history.requesterToString() + ")");
 
             switch (history.getStatus()) {
                 case REQUESTED:
@@ -366,7 +366,7 @@ public class AdminHistoryAdapter extends RecyclerView.Adapter {
                 case EXPIRED: {
                     itemName.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
                     timeStamps.setTextColor(context.getResources().getColor(R.color.colorDisableGray));
-                    btn.setVisibility(View.INVISIBLE);
+                    btn.setVisibility(View.GONE);
                     break;
                 }
                 default: {

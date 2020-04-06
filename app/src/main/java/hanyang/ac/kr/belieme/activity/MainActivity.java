@@ -22,6 +22,7 @@ import hanyang.ac.kr.belieme.activity.fragment.AdminStuffListFragment;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.fragment.UserHistoryFragment;
+import hanyang.ac.kr.belieme.dataType.Permission;
 import hanyang.ac.kr.belieme.dataType.UserInfo;
 import hanyang.ac.kr.belieme.activity.fragment.SettingFragment;
 import hanyang.ac.kr.belieme.activity.fragment.UserStuffListFragment;
@@ -68,10 +69,7 @@ public class MainActivity extends AppCompatActivity {
         title = findViewById(R.id.main_textView_title);
 
         Globals.isAdminMode = false;
-        Globals.adminInfo.add(new Pair<String, String>("2018008886", "이석환"));
-        Globals.adminInfo.add(new Pair<String, String>("2018007929", "김동규"));
-        Globals.adminInfo.add(new Pair<String, String>("2019088722", "박지원"));
-        if(Globals.isAdmin()) {
+        if(Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
             changeModeBtn.setVisibility(View.VISIBLE);
         }
 
@@ -152,14 +150,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setChangeModeBtnEnabled(boolean enabled) {
-        if(Globals.isAdmin()) {
+        if(Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
             changeModeBtn.setEnabled(enabled);
         }
     }
 
     public void setChangeModeBtnVisibility(int visibility) {
-        if(Globals.isAdmin()) {
-            Log.d("Admin", "true");
+        if(Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
             changeModeBtn.setVisibility(visibility);
         }
     }

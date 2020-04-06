@@ -1,7 +1,6 @@
 package hanyang.ac.kr.belieme.adapter;
 
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import hanyang.ac.kr.belieme.activity.DetailItemTypeActivity;
 import hanyang.ac.kr.belieme.Globals;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.activity.MainActivity;
@@ -191,6 +191,19 @@ public class UserStuffAdapter extends RecyclerView.Adapter {
             count = itemView.findViewById(R.id.stuffCell_textView_count);
             btn = itemView.findViewById(R.id.stuffCell_btn_rent);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, DetailItemTypeActivity.class);
+
+                    intent.putExtra("typeId", Integer.parseInt(id.getText().toString()));
+                    intent.putExtra("name", name.getText().toString());
+                    intent.putExtra("countAndAmount", count.getText().toString());
+                    intent.putExtra("emoji", emoji.getText().toString());
+                    intent.putExtra("isAdminMode", false);
+                    context.startActivity(intent);
+                }
+            });
         }
     }
 

@@ -24,22 +24,16 @@ import hanyang.ac.kr.belieme.activity.MainActivity;
 import hanyang.ac.kr.belieme.activity.UserInfoActivity;
 import hanyang.ac.kr.belieme.R;
 import hanyang.ac.kr.belieme.adapter.SettingAdapter;
+import hanyang.ac.kr.belieme.dataType.Permission;
 import hanyang.ac.kr.belieme.dataType.Setting;
 
-public class SettingFragment extends Fragment { // TODO 추가해야지 ㅎㅎ
+public class SettingFragment extends Fragment {
     View layoutView;
     MainActivity context;
 
     SettingAdapter adapter;
 
-    private boolean isFirst;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        Log.d("OnAttach", "");
-        isFirst = true;
-    }
+    private boolean onlyResume;
 
     @Override
     public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,9 +41,9 @@ public class SettingFragment extends Fragment { // TODO 추가해야지 ㅎㅎ
         layoutView = inflater.inflate(R.layout.fragment_setting, container, false);
         context = (MainActivity)getActivity();
 
-        context.setChangeModeBtnVisibility(View.INVISIBLE);
+        onlyResume = false;
 
-        Log.d("isFirst", String.valueOf(isFirst));
+        context.setChangeModeBtnVisibility(View.INVISIBLE);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         adapter = new SettingAdapter(context);
@@ -68,7 +62,7 @@ public class SettingFragment extends Fragment { // TODO 추가해야지 ㅎㅎ
             }
         }));
 
-        if(Globals.isAdmin()) {
+        if(Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
             settings.add(new Setting("관리자 명단 관리", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -77,14 +71,6 @@ public class SettingFragment extends Fragment { // TODO 추가해야지 ㅎㅎ
                 }
             }));
         }
-
-        settings.add(new Setting("GitHub", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO
-                Toast.makeText(context, "github 띄우기", Toast.LENGTH_LONG);
-            }
-        }));
 
         settings.add(new Setting("정보", new View.OnClickListener() {
             @Override
@@ -100,16 +86,52 @@ public class SettingFragment extends Fragment { // TODO 추가해야지 ㅎㅎ
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(onlyResume == false) {
+            onlyResume = true;
+        } else {
+            ArrayList<Setting> settings = new ArrayList<>();
+
+            settings.add(new Setting("개인정보", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, UserInfoActivity.class);
+                    startActivity(intent);
+                }
+            }));
+
+            if (Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
+                settings.add(new Setting("관리자 명단 관리", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(context, AdminManageActivity.class);
+                        startActivity(intent);
+                    }
+                }));
+            }
+
+            settings.add(new Setting("정보", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, AppInfoActivity.class);
+                    startActivity(intent);
+                }
+            }));
+
+            adapter.update(settings);
+        }
+    }
+
+    @Override
     public void onPause() {
         Log.d("OnPause", "");
-        isFirst = false;
         super.onPause();
     }
 
     @Override
     public void onStop() {
         Log.d("OnStop", "");
-        isFirst = false;
         super.onStop();
     }
 

@@ -27,7 +27,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginBottom="2dp"
-                android:text="C type 충전기 1"
+                android:text="C type 충전기 #1"
                 android:textSize="20sp" />
 
             <TextView
@@ -37,7 +37,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_marginBottom="2dp"
-                android:text="2020/01/09 ~ 2020/01/22 (3번 독촉 됨)"
+                android:text="2020/01/09 ~ 2020/01/22 (18 이석환)"
                 android:visibility="visible" />
         </LinearLayout>
 

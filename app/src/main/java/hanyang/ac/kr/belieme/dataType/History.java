@@ -278,12 +278,17 @@ public class History {
         TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
         formatter.setTimeZone(timeZone);
         switch (status) {
+            case REQUESTED :
+                return (System.currentTimeMillis() - requestTimeStamp.getTime())/(1000 * 60) + "분 지남";
+//                formatter = new SimpleDateFormat("HH:mm");
+//                formatter.setTimeZone(timeZone);
+//                return formatter.format(requestTimeStamp);
             case DELAYED :
+                return (System.currentTimeMillis() - getDueDate().getTime())/(1000 * 24 * 60 * 60) + "일 지남";
             case USING :
-                return formatter.format(responseTimeStamp) + " ~ " + formatter.format(getDueDate());
+                return (getDueDate().getTime() - System.currentTimeMillis())/(1000 * 24 * 60 * 60) + "일 남음";
             case RETURNED :
                 return formatter.format(responseTimeStamp) + " ~ " + formatter.format(returnTimeStamp);
-            case REQUESTED :
             case EXPIRED :
                 return formatter.format(requestTimeStamp);
             case ERROR :
@@ -291,5 +296,10 @@ public class History {
                 return null;
 
         }
+    }
+
+    public String requesterToString() {
+        String requesterIdString = String.valueOf(requesterId);
+        return requesterIdString.substring(2,4) + " " + requesterName;
     }
 }

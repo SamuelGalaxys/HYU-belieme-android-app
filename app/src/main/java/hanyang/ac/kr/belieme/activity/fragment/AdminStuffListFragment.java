@@ -1,7 +1,5 @@
 package hanyang.ac.kr.belieme.activity.fragment;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,14 +12,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
-import hanyang.ac.kr.belieme.Exception.InternalServerException;
-import hanyang.ac.kr.belieme.activity.AddItemActivity;
 import hanyang.ac.kr.belieme.activity.MainActivity;
+import hanyang.ac.kr.belieme.activity.dialog.AddItemDialog;
 import hanyang.ac.kr.belieme.adapter.AdminStuffAdapter;
 import hanyang.ac.kr.belieme.dataType.ExceptionAdder;
 import hanyang.ac.kr.belieme.dataType.ItemType;
@@ -61,8 +55,10 @@ public class AdminStuffListFragment extends Fragment {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, AddItemActivity.class);
-                startActivity(intent);
+                AddItemDialog addItemDialog = new AddItemDialog(context, adapter);
+                addItemDialog.showAddItemDialog();
+//                Intent intent = new Intent(context, AddItemActivity.class);
+//                startActivity(intent);
             }
         });
 

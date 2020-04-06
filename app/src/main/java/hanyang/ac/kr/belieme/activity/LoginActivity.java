@@ -204,6 +204,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected UserInfo doInBackground(String... strings) {
+            publishProgress();
             try {
                 UserInfoRequest userInfoRequest = new UserInfoRequest(context);
                 return userInfoRequest.getUserInfo(strings[0]);
@@ -216,6 +217,12 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            loginPart.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected void onPostExecute(UserInfo userInfo) {
             super.onPostExecute(userInfo);
             if(userInfo != null) {
@@ -225,6 +232,10 @@ public class LoginActivity extends AppCompatActivity {
                 intent.putExtra("exit", true);
                 startActivity(intent);
                 finish();
+            } else {
+                loginPart.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(context, "네트워크 문제로 인해 로그인에 실패했습니다.", Toast.LENGTH_LONG).show();
             }
         }
     }

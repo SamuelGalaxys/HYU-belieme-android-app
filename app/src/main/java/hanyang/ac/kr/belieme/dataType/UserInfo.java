@@ -8,8 +8,9 @@ public class UserInfo {
     private String daehakName;
     private String majorName;
     private String status;
+    private Permission permission;
 
-    public UserInfo(String studentId, String name, String majorCode, String statusCode, String daehakName, String majorName, String status) {
+    public UserInfo(String studentId, String name, String majorCode, String statusCode, String daehakName, String majorName, String status, Permission permission) {
         this.studentId = studentId;
         this.name = name;
         this.majorCode = majorCode;
@@ -17,6 +18,7 @@ public class UserInfo {
         this.daehakName = daehakName;
         this.majorName = majorName;
         this.status = status;
+        this.permission = permission;
     }
 
     public String getStudentId() {
@@ -45,5 +47,13 @@ public class UserInfo {
 
     public String getStatus() {
         return status;
+    }
+
+    public Permission getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Permission permission) {
+        this.permission = permission;
     }
 }

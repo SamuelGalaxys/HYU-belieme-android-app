@@ -35,6 +35,8 @@ public class UserStuffListFragment extends Fragment {
         layoutView = inflater.inflate(R.layout.fragment_stuff_list, container, false);
         context = (MainActivity)getActivity();
 
+        onlyResume = false;
+
         context.setChangeModeBtnVisibility(View.VISIBLE);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
