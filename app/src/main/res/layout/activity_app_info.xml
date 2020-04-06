@@ -94,7 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|center_vertical"
                 android:gravity="right|center_vertical"
-                android:text="이석환(huan99@hanyang.com)"
+                android:text="이석환(huan99@hanyang.ac.kr)"
                 android:textColor="@color/colorBlack"
                 android:textSize="14sp" />
 
@@ -159,7 +159,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|center_vertical"
                 android:gravity="right|center_vertical"
-                android:text="김동규(stleamist@me.com)"
+                android:text="김동규(stleamist@hanyang.ac.kr)"
                 android:textColor="@color/colorBlack"
                 android:textSize="14sp" />
 

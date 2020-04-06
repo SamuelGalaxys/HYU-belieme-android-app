@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
             return;
-        } else if(getIntent().getBooleanExtra("afterLogin", false)) {
+        } else if(getIntent().getBooleanExtra("afterLogin", false)) {  //TODO 1달 뒤에 지우자
             if(Globals.userInfo.getPermission() != Permission.USER && Globals.userInfo.getPermission() != Permission.ERROR) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("인편쓰거라 이 녀석들아")
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         .create()
                         .show();
             }
-        }
+        }//TODO 여기까지
 
         changeModeBtn = findViewById(R.id.main_btn_changeMode);
 
