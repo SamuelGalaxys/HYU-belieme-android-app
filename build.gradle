@@ -14,6 +14,8 @@ buildscript {
     }
 }
 
+//2019년 만들어짐
+
 allprojects {
     repositories {
         google()
